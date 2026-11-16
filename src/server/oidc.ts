@@ -160,6 +160,7 @@ export async function finishLogin(currentUrl: URL, pending: Pending): Promise<{ 
     }
   }
   if (!user) {
+    if (!env.allowSignup) throw new OidcDenied("New host accounts are disabled on this server.");
     // An unverified email is not stored: it could be someone else's address.
     user = await createUser(verified ? email : `${sub}@oidc.local`, null, name, verified);
     user = await prisma.user.update({ where: { id: user.id }, data: { oidcSub: sub } });

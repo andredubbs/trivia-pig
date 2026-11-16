@@ -22,7 +22,7 @@ class SoundEngine {
   private musicNodes: AudioScheduledSourceNode[] = [];
   private musicStop: (() => void) | null = null;
   private noiseBuf: AudioBuffer | null = null;
-  settings: SoundSettings = { master: 0.8, muted: false, music: true, sfx: true };
+  settings: SoundSettings = { master: 0.8, muted: true, music: true, sfx: true };
 
   get unlocked() {
     return this.ctx?.state === "running";

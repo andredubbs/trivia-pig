@@ -163,7 +163,7 @@ export default function DisplayClient({ code, mode = "display", obs = false, mut
       {view.paused && view.screen === "none" && <PausedOverlay />}
       {view.screen === "brb" && <BrbScreen title={view.title} />}
       {view.screen === "blank" && <div className="fixed inset-0 z-40 bg-black" />}
-      {!soundOn && !watching && !obs && (
+      {!soundOn && !view.settings.sound.muted && !watching && !obs && (
         <EnableSound
           onEnable={async () => {
             await sound().unlock();
@@ -495,6 +495,24 @@ function ClueScreen({ view, now }: { view: GameView; now: () => number }) {
   const c = view.clue!;
   const ddPending = c.dailyDouble && c.dailyDouble.wager === null;
   const answering = view.players.find((p) => p.id === c.answering);
+  if (c.stage === "revealed" && !ddPending) return (
+    <div key={c.id} className="board-cell flex h-full min-h-0 flex-col gap-[2vmin] px-[4vmin] py-[3vmin] text-center" data-testid="revealed-clue">
+      <div className="cat-text shrink-0 text-[2.6vmin] text-white/90">{c.category} · <span className="text-gold">${c.dailyDouble?.wager ?? c.value}</span></div>
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-[4vmin]">
+        <section className="flex min-h-0 flex-col items-center justify-center gap-[2vmin]">
+          <div className="clue-text shrink-0" style={{ fontSize: `${(c.text?.length ?? 0) > 550 ? 2.8 : (c.text?.length ?? 0) > 300 ? 3 : 3.2}vmin` }}>{c.text}</div>
+          {c.media && <div className="flex min-h-0 w-full flex-1 items-center justify-center"><MediaView media={c.media} className="max-h-full max-w-full rounded-[1vmin]" /></div>}
+        </section>
+        <section className="flex min-h-0 flex-col items-center justify-center gap-[2vmin] rounded-[1.5vmin] bg-black/30 p-[2vmin]">
+          <div className="text-[2vmin] font-semibold uppercase tracking-widest text-white/85">Answer</div>
+          {c.answerMedia && <div className="flex min-h-0 w-full flex-1 items-center justify-center"><MediaView media={c.answerMedia} className="max-h-full max-w-full rounded-[1vmin]" /></div>}
+          <div className="clue-text shrink-0 text-gold" style={{ fontSize: `${(c.answer?.length ?? 0) > 450 ? 3.1 : (c.answer?.length ?? 0) > 250 ? 3.6 : 4.2}vmin` }}>{c.answer}</div>
+          {c.nobody && <div className="text-[2.4vmin] text-white/85">Nobody got it</div>}
+        </section>
+      </div>
+      {c.allPlay && <div className="shrink-0"><AllPlayPanel view={view} /></div>}
+    </div>
+  );
   return (
     <div key={c.id} className="board-cell anim-clue relative flex h-full flex-col items-center justify-center gap-[3vmin] p-[5vmin] text-center">
       {!c.dailyDouble && !c.allPlay && <BuzzLights clue={c} now={now} />}
@@ -729,6 +747,37 @@ function FinalScreen({ view, now }: { view: GameView; now: () => number }) {
   const current = f.current;
   const cur = current ? contestants(view).find((c) => c.id === current) : null;
   const r = current ? f.revealed[current] : null;
+  if ((f.stage === "reveal" || f.stage === "done") && cur && r) return (
+    <div className="flex h-full min-h-0 flex-col" data-testid="final-reveal-screen">
+      <div className="board-cell grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-[2vmin] p-[3vmin] text-center">
+        <header className="flex min-w-0 items-center justify-between gap-[3vmin]">
+          <div className="cat-text shrink-0 text-[3vmin] tracking-widest text-gold">Final Jeopardy!</div>
+          <div className="cat-text min-w-0 break-words text-right text-[4.5vmin]" style={{ color: cur.color }}>{cur.name}</div>
+        </header>
+        <div key={cur.id} className="anim-pop grid min-h-0 grid-cols-[1.25fr_1fr] gap-[3vmin]" data-testid="final-reveal-content">
+          <section className="relative flex min-h-0 min-w-0 items-center justify-center rounded-[1.5vmin] bg-[var(--board-deep)] p-[3vmin] shadow-2xl" aria-label={`${cur.name}'s Final answer`}>
+            {f.answers[cur.id] ? (
+              <Ink drawing={f.answers[cur.id]} className="h-full max-h-full w-full min-w-0" />
+            ) : (
+              <div className="clue-text min-w-0 break-words [overflow-wrap:anywhere]" style={{ fontSize: `${(f.typed[cur.id]?.length ?? 0) > 120 ? 3.6 : 5}vmin` }}>{f.typed[cur.id] || "(no answer)"}</div>
+            )}
+            {r.judged !== null && <div className={`anim-pop absolute right-[1vmin] top-[1vmin] grid h-[7vmin] w-[7vmin] place-items-center rounded-full text-[4.5vmin] font-black shadow-xl ${r.judged ? "bg-green-500" : "bg-red-500"}`} aria-label={r.judged ? "Correct" : "Incorrect"}>{r.judged ? "✓" : "✗"}</div>}
+          </section>
+          <section className="flex min-h-0 min-w-0 flex-col justify-center gap-[3vmin] rounded-[1.5vmin] bg-black/25 p-[3vmin]">
+            {f.answer && <div className="min-h-0 overflow-y-auto" data-testid="final-reveal-prompt">
+              <div className="mb-[1.5vmin] text-[2.2vmin] font-semibold uppercase tracking-widest text-white/85">Correct response</div>
+              <div className="clue-text break-words text-gold" style={{ fontSize: `${f.answer.length > 450 ? 2.2 : f.answer.length > 250 ? 2.6 : 3.2}vmin` }}>{f.answer}</div>
+            </div>}
+            <div className="grid shrink-0 grid-cols-2 gap-[2vmin] border-t border-white/20 pt-[2vmin]">
+              <div><div className="text-[2.2vmin] text-white/85">Wager</div><div className="money mt-[0.6vmin] text-[3.8vmin]">{r.wager ? `$${(f.wagers[cur.id] ?? 0).toLocaleString()}` : "???"}</div></div>
+              <div><div className="text-[2.2vmin] text-white/85">Score</div><div className={`money mt-[0.6vmin] text-[3.8vmin] ${(view.scores[cur.id] ?? 0) < 0 ? "!text-red-400" : ""}`}>{formatScore(view.scores[cur.id] ?? 0)}</div></div>
+            </div>
+          </section>
+        </div>
+      </div>
+      <div className="shrink-0" data-testid="final-score-strip"><PodiumRow view={view} list={contestants(view)} /></div>
+    </div>
+  );
   return (
     <div className="flex h-full flex-col">
       <div className="board-cell relative flex min-h-0 flex-1 flex-col items-center justify-center gap-[2.5vmin] p-[4vmin] text-center">

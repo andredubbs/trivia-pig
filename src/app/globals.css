@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --board: #0a1a9e;
-  --board-deep: #050c5c;
-  --board-edge: #000433;
-  --gold: #ffcf3f;
+  --board: #123f32;
+  --board-deep: #0b2921;
+  --board-edge: #071a15;
+  --gold: #ffe598;
   /* Lettering for the board; a board theme overrides these on its wrapper. */
-  --f-display: var(--font-oswald), "Arial Narrow", sans-serif;
-  --f-clue: var(--font-lora), Georgia, serif;
-  --ink: #f6f7ff;
-  --ui-bg: #0b0f24;
-  --ui-panel: #141a38;
-  --ui-panel-2: #1c2349;
-  --ui-line: #2a3263;
+  --f-display: var(--font-inter), system-ui, sans-serif;
+  --f-clue: var(--font-inter), system-ui, sans-serif;
+  --ink: #fbfff8;
+  --ui-bg: #091e18;
+  --ui-panel: #123127;
+  --ui-panel-2: #1c4235;
+  --ui-line: #4b7160;
   --ok: #22c55e;
   --bad: #ef4444;
   --warn: #f59e0b;
@@ -50,9 +50,8 @@ button:disabled {
 .clue-text {
   font-family: var(--f-clue);
   font-weight: 700;
-  text-transform: uppercase;
-  text-shadow: 0.06em 0.06em 0 #000;
-  line-height: 1.25;
+  text-shadow: 0 2px 2px #000;
+  line-height: 1.35;
 }
 .money {
   font-family: var(--f-display);
@@ -63,9 +62,8 @@ button:disabled {
 .cat-text {
   font-family: var(--f-display);
   font-weight: 700;
-  text-transform: uppercase;
   text-shadow: 0.05em 0.05em 0 #000;
-  line-height: 1.05;
+  line-height: 1.15;
 }
 .board-cell {
   background: radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--board) 84%, white) 0%, var(--board) 55%, color-mix(in srgb, var(--board) 80%, black) 100%);
@@ -80,7 +78,7 @@ button:disabled {
   @apply btn bg-gold text-black hover:brightness-110;
 }
 @utility btn-ghost {
-  @apply btn border border-line bg-panel-2 text-white hover:bg-[#262e5c];
+  @apply btn border border-line bg-panel-2 text-white hover:bg-[#2a5745];
 }
 @utility btn-ok {
   @apply btn bg-green-600 text-white hover:bg-green-500;
@@ -89,7 +87,7 @@ button:disabled {
   @apply btn bg-red-600 text-white hover:bg-red-500;
 }
 @utility input {
-  @apply w-full rounded-lg border border-line bg-[#0e1330] px-3 py-2 text-white outline-none placeholder:text-white/30 focus:border-gold;
+  @apply w-full rounded-lg border border-line bg-[#0b271e] px-3 py-2 text-white outline-none placeholder:text-white/60 focus:border-gold;
 }
 @utility card {
   @apply rounded-2xl border border-line bg-panel p-4;
@@ -414,5 +412,20 @@ button:disabled {
   }
   .late-pop {
     animation: none;
+  }
+}
+
+/* Classroom projection: keep focus visible and respect motion-sensitive participants. */
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

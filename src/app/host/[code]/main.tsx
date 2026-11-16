@@ -81,6 +81,22 @@ function LobbyControl() {
         </div>
       </div>
 
+      {view.settings.classroomTeams && (
+        <section className="flex flex-wrap items-center gap-4 rounded-2xl bg-gold/10 p-4">
+          <label className="flex items-center gap-3 font-semibold">
+            Teams
+            <select className="input !w-auto" aria-label="Number of classroom teams" value={view.settings.teamCount} onChange={(e) => act({ type: "settings/update", settings: { teamCount: Number(e.target.value) } })}>
+              {[2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </label>
+          <p className="min-w-48 flex-1 text-sm text-white/85">One phone per team. Teams name themselves when joining; rename them in Players. Release occupied higher-numbered seats before reducing the count.</p>
+        </section>
+      )}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        <a className="font-semibold text-gold underline" href="/offline.html" download="plant-pathology-offline.html">Download offline rescue</a>
+        <span className="text-white/75">Save before class. Open the saved file on your laptop if Wi-Fi fails.</span>
+      </div>
+
       <div className="card">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-semibold">

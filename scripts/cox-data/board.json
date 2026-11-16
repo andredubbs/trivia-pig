@@ -1,0 +1,308 @@
+{
+  "format": "jeppidy-board",
+  "title": "Plant Pathology · PLSCI 3010 / 5010",
+  "description": "25 original course clues and answers from Kerik’s supplied 51-slide deck. The supplied PowerPoint board labels its fifth category MANAGEMENT; the canonical gameData labels it Defense. Defense is retained without changing the original deck or any clue/answer wording.",
+  "tags": [
+    "plant-pathology",
+    "plsci-3010",
+    "plsci-5010",
+    "cox"
+  ],
+  "content": {
+    "rounds": [
+      {
+        "id": "cox-round-1",
+        "kind": "single",
+        "name": "Plant Pathology",
+        "values": [
+          100,
+          200,
+          300,
+          400,
+          500
+        ],
+        "categories": [
+          {
+            "id": "cox-category-0",
+            "name": "Viruses",
+            "clues": [
+              {
+                "id": "cox-0-0",
+                "text": "What makes viruses different from pathogens like bacteria, fungi, and heterokonts?",
+                "answer": "What are non-cellular particles made of nucleic acid and a protein coat that lack metabolism, depend on a host for replication, and are classified by host and symptoms rather than nutrition or energy use?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-0-1",
+                "text": "What word would you use to describe a type of insect transmission whereby the virus replicates in the insect's body?",
+                "answer": "What is propagative transmission?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-0-2",
+                "text": "You are studying viruses of Cuscuta campestris (a plant pathogenic plant). As you are working to prove pathogenicity, you also want to understand transmission of the viruses infecting Cuscuta. In order to develop hypotheses on transmission, you need to understand vertical and horizontal transmission. Please define vertical and horizontal transmission and provide an example of each.",
+                "answer": "What is vertical transmission,  virus passed between generations (e.g., seeds or pollen)?\n\nWhat is horizontal transmission,  virus spread between plants    (e.g., by vectors or mechanical means)?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-0-3",
+                "text": "You are reading a paper about tomato pathology and come across a virus that you find particularly interesting. There isn't much information about this virus in the book, but it does provide you with a life history/replication cycle. It doesn't say if the virus is a DNA virus or an RNA virus. How could you determine this from the life history/replication cycle diagram in the paper?",
+                "answer": "What is DNA viruses replicate in the nucleus using host transcription, and RNA viruses replicate in the cytoplasm using their own RNA-dependent enzymes?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-0-4",
+                "text": "In lab you are studying the systemic movement of a virus. You want to understand the specifics of how this virus infects and are creating a detailed timeline of how it moves throughout the plant. You check the cells and tissues every day to track how the disease progresses. On day four, you find virions in the epidermal, mesophyll, and parenchyma cells. How did the virions get into the parenchyma cells from the site of infection? And how will they travel through the plant as the virus progresses?",
+                "answer": "What is the process where virions replicate in an inoculated leaf’s epidermal cells, move cell-to-cell through plasmodesmata from epidermal to mesophyll cells, then enter the phloem to travel rapidly in a source to sink manner, initiating new infections in growing tissues?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              }
+            ]
+          },
+          {
+            "id": "cox-category-1",
+            "name": "Fungi",
+            "clues": [
+              {
+                "id": "cox-1-0",
+                "text": "Name the following fungi features?",
+                "answer": "What is Smut (Teliospores)?\n\nWhat is Rust (Haustoria)?",
+                "media": {
+                  "type": "image",
+                  "url": "/cox/composites/1-0-q.png"
+                },
+                "answerMedia": {
+                  "type": "image",
+                  "url": "/cox/composites/1-0-a.png"
+                },
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-1-1",
+                "text": "Describe the differences between Basidiomycetes and Ascomycetes?",
+                "answer": "What are Basidiomycetes, which range from saprotrophs to symbionts to pathogens (e.g., wood decay, rusts, smuts), produce basidiospores in basidium, form clamp connections to maintain the dikaryotic state, and are briefly diploid during sexual reproduction?\nWhat are Ascomycetes, which range from saprotrophs to pathogens (e.g., rots, spots, mildew), produce ascospores in asci, have haploid or heterokaryotic mycelia, become briefly dikaryotic and diploid during sexual reproduction, and are classified by their (a)sexual fruiting bodies or lack thereof (hyphomycetes)?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-1-2",
+                "text": "The perithecium and the psuedothecium are structures often confused with one another. How could you tell them apart? What would you look for?",
+                "answer": "What are perithecia, which are entirely made by the pathogen and contain unitunicate asci?\n\nWhat are pseudothecia, which are hollow pits or indentations in stroma formed by a combination of plant and pathogen tissue and contain bitunicate asci?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-1-3",
+                "text": "Identify each of the following Coelomycete structures. \nWhich of these structures would you expect to be more favored in drier field environments, and why?",
+                "answer": "What is the pycnidium, a structure that better protects conidia from heat and drought, enabling the fungus to survive dry periods and release spores only when moisture becomes available?",
+                "media": {
+                  "type": "image",
+                  "url": "/cox/composites/1-3-q.png"
+                },
+                "answerMedia": {
+                  "type": "image",
+                  "url": "/cox/composites/1-3-a.png"
+                },
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-1-4",
+                "text": "Ascomycetes pathogens as a group may produce several types of reproductive fruiting bodies. Please name and briefly describe FIVE possible fruiting bodies presented in class. Make sure to include in your definitions which are used for sexual reproduction and which are used for asexual reproduction.",
+                "answer": "What are Acervulus and Pycnidium, which are asexual?\nWhat are Chasmothecium, Apothecium, Perithecium, and Pseudothecium, which are sexual?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              }
+            ]
+          },
+          {
+            "id": "cox-category-2",
+            "name": "Symptoms / structures",
+            "clues": [
+              {
+                "id": "cox-2-0",
+                "text": "Name and describe the following fungi (ascomata) structures",
+                "answer": "What is perithecium, a flask-like shape with narrow opening for spores to exit?\n What is apothecium, an open cup/bowl and Asci cover the bottom?\nWhat is cleistothecium, a closed sphere and has to be broken open?",
+                "media": {
+                  "type": "image",
+                  "url": "/cox/composites/2-0-q.png"
+                },
+                "answerMedia": {
+                  "type": "image",
+                  "url": "/cox/composites/2-0-a.png"
+                },
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-2-1",
+                "text": "Name the following virus capsid shapes",
+                "answer": "What is a Bacilliform? \nWhat is a Rod? \nWhat is a Icosahedral?",
+                "media": {
+                  "type": "image",
+                  "url": "/cox/composites/2-1-q.png"
+                },
+                "answerMedia": {
+                  "type": "image",
+                  "url": "/cox/composites/2-1-a.png"
+                },
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-2-2",
+                "text": "Name and describe the following virus symptoms, and identify the type of vector most likely responsible for transmitting the virus that caused these symptoms.",
+                "answer": "What is Tabacco Rattle Virus of Peony, caused by nematodes, and show ringspots, which are patterns of pigment loss?\nWhat is Grapevine Leafroll Virus, caused by mealybugs, and show leaf curl, which is a disruption of tissue development?",
+                "media": {
+                  "type": "image",
+                  "url": "/cox/composites/2-2-q.png"
+                },
+                "answerMedia": {
+                  "type": "image",
+                  "url": "/cox/composites/2-2-a.png"
+                },
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-2-3",
+                "text": "Describe and interpret the following structures and their roles in the Wheat Stem Rust life cycle",
+                "answer": "What are teliospores, which serve as the overwintering structures on wheat, facilitating the formation o basidium and basidiospores from the wheat host to the alternate host, barberry?\nWhat are aeciospores, which act as the primary inoculum for wheat, enabling the transition from barberry back to wheat?",
+                "media": {
+                  "type": "image",
+                  "url": "/cox/composites/2-3-q.png"
+                },
+                "answerMedia": {
+                  "type": "image",
+                  "url": "/cox/composites/2-3-a.png"
+                },
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-2-4",
+                "text": "During mid-season in a vegetable production field, several irregular patches of stunted plants are observed. The foliage in these areas is yellowed, even though soil fertility and moisture levels appear normal. When uprooted, the plants exhibit a reduced and distorted root system with numerous swollen, rounded galls of varying sizes. Fine feeder roots are largely absent, and secondary infections by fungi are visible around the swollen tissues. The upper portions of affected plants wilt more quickly under midday heat than surrounding healthy plants. Based on the field and root symptoms, what type of organism is most likely responsible? Briefly describe how this organism feeds on the plant and how that feeding results in the symptoms observed",
+                "answer": "What is a root-knot nematode (a sedentary endoparasite), where they invade root tips and migrate to the vascular region, inducing the formation of giant cells and causing root galls due to hypertrophy and hyperplasia of host cells, thus disrupting nutrient flow and reducing root development?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              }
+            ]
+          },
+          {
+            "id": "cox-category-3",
+            "name": "Nematodes",
+            "clues": [
+              {
+                "id": "cox-3-0",
+                "text": "Name the Nematode stage",
+                "answer": "What is a Juvenile \n(J2)?\n\nWhat is an adult \n(female w/ eggs)?",
+                "media": {
+                  "type": "image",
+                  "url": "/cox/composites/3-0-q.png"
+                },
+                "answerMedia": {
+                  "type": "image",
+                  "url": "/cox/composites/3-0-a.png"
+                },
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-3-1",
+                "text": "Name and describe the following characteristics of a nematode.",
+                "answer": "What is a stylet, a hardened spear-like feeding structure; penetration for removing food?\n\nWhat is an amphid, a chemosensory organ that orient the nematode toward food?",
+                "media": {
+                  "type": "image",
+                  "url": "/cox/composites/3-1-q.png"
+                },
+                "answerMedia": {
+                  "type": "image",
+                  "url": "/cox/composites/3-1-a.png"
+                },
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-3-2",
+                "text": "Compare and contrast sedentary and migratory nematodes in terms of their feeding strategies and impact on host physiology.",
+                "answer": "What are sedentary nematodes, which establish permanent feeding sites within host roots, become immobile, and secrete effector proteins that reprogram host cells near the vascular cylinder into giant cells or syncytia, causing hypertrophy, galling, stunting, and chlorosis through systemic physiological manipulation?\nWhat are migratory nematodes, which remain mobile, use a stylet to puncture and withdraw cell contents, move through root tissues leaving necrotic lesions and mechanical damage, and act more like insect pests in their localized feeding strategy?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-3-3",
+                "text": "A soybean field in central Illinois shows widespread patches of yellowed, stunted plants. The roots appear swollen with small, round galls, and when cut open under a microscope, the root tissues reveal large multinucleate cells near the vascular bundle. Female nematodes are observed embedded in the root, pear-shaped and immobile, while numerous eggs are visible in a gelatinous matrix on the root surface. Based on these observations, determine whether the nematode in this field is sedentary or migratory and whether it is ectoparasitic or endoparasitic. Explain your reasoning.",
+                "answer": "What is a sedentary endoparasitic nematode that becomes immobile once feeding begins, feeds inside the root, and causes cell hypertrophy and formation of multinucleate giant cells, with root galls and transfer cell formation indicating a high degree of host physiological manipulation typical of pathogens?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-3-4",
+                "text": "A tomato grower in coastal California notices irregular chlorotic rings and line patterns forming on the leaves of her plants. Fruit from affected plants show concentric rings and uneven ripening. A diagnostic lab confirms the presence of Tobacco rattle virus (TRV). Further investigation reveals high populations of Trichodorus and Paratrichodorus nematodes in the soil. Describe the role of nematodes as virus vectors and how they transmit TRV and Explain why TRV persists in a field even after removal of infected plants.",
+                "answer": "What are ectoparasitic, migratory nematodes that feed on root epidermal cells and acquire/transmit TRV through their stylets while feeding, introducing the virus directly into root tissues? \nWhat is Tobacco Rattle Virus (TRV), persisting inside nematode populations feeding on in weed hosts for extended periods?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              }
+            ]
+          },
+          {
+            "id": "cox-category-4",
+            "name": "Defense",
+            "clues": [
+              {
+                "id": "cox-4-0",
+                "text": "Two barriers that plants use for defense",
+                "answer": "What are trichomes and the cuticle?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-4-1",
+                "text": "The three components of the cuticle",
+                "answer": "What are…\nCutin?\nCutan?\nEpicuticular waxes?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-4-2",
+                "text": "Enzymatic Modification, Efflux Pumps, Mutated Target, “No-Target”",
+                "answer": "What are the ways that phytoanticipins/phytoalexcins can be inactivated by invading pathogens?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-4-3",
+                "text": "Pathogen-associated molecular patterns & damage-associated molecular patterns",
+                "answer": "What are PAMPS and DAMPS?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              },
+              {
+                "id": "cox-4-4",
+                "text": "The first tier of plant defenses where PAMPS from pathogens and DAMPS from the plant are recognized by cell surface Patter Recognition Receptors that results in oxidative bursts, cell wall reinforcement, vesicle trafficking of phytoalexins, papillae formation, and closing of stomates",
+                "answer": "What is PAMP triggered immunity (PTI)?",
+                "media": null,
+                "answerMedia": null,
+                "dailyDouble": false
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "final": null
+  }
+}

@@ -1,0 +1,7 @@
+
+# Cox classroom trivia-pig — Air event-sourced app, native websocket proxy.
+jeopardy.192-241-145-6.sslip.io {
+	encode zstd gzip
+	# Only serve intended classroom entry points; private host/account routes use app auth.
+	reverse_proxy 100.78.245.11:18340
+}

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Use only this app's read-only principal, never the Air's general grant.
+exec /opt/homebrew/bin/doppler --config-dir "$HOME/.config/cox-jeopardy-d" "$@"

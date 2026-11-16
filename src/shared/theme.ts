@@ -13,7 +13,7 @@ export const boardThemeSchema = z.object({
 });
 export type BoardTheme = z.infer<typeof boardThemeSchema>;
 
-export const DEFAULT_THEME: BoardTheme = { board: "#0a1a9e", accent: "#ffcf3f", font: "classic" };
+export const DEFAULT_THEME: BoardTheme = { board: "#123f32", accent: "#ffe598", font: "modern" };
 
 export const THEME_PRESETS: { id: string; name: string; theme: BoardTheme }[] = [
   { id: "classic", name: "Classic blue", theme: DEFAULT_THEME },

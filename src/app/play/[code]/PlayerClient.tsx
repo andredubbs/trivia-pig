@@ -300,12 +300,12 @@ function JoinForm({ view, emit, code, rejoinName }: { view: GameView; emit: Emit
     await done(
       await emit("player:join", {
         name: name.trim(),
-        signature: !asAudience && drawing && !isEmptyDrawing(drawing) ? drawing : null,
-        avatar: !asAudience && avatar && !isEmptyDrawing(avatar) ? avatar : null,
+        signature: !asAudience && !view.settings.classroomTeams && drawing && !isEmptyDrawing(drawing) ? drawing : null,
+        avatar: !asAudience && !view.settings.classroomTeams && avatar && !isEmptyDrawing(avatar) ? avatar : null,
         teamId,
         audience: asAudience || undefined,
       }),
-      asAudience ? "no" : "save",
+      asAudience || view.settings.classroomTeams ? "no" : "save",
     );
   }
   async function reclaim(playerId: string) {
@@ -332,6 +332,43 @@ function JoinForm({ view, emit, code, rejoinName }: { view: GameView; emit: Emit
       </div>
     </div>
   );
+
+  if (view.settings.classroomTeams && !viaWatch && !asWatcher) {
+    const occupied = new Set(view.players.filter((p) => !p.removed).map((p) => p.teamId));
+    const selected = view.teams.find((t) => t.id === teamId);
+    return (
+      <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col gap-5 px-5 py-8">
+        <header>
+          <div className="text-sm font-semibold uppercase tracking-widest text-gold">Plant pathology · Team check-in</div>
+          <h1 className="mt-2 text-3xl font-bold leading-tight">{view.title}</h1>
+          <p className="mt-3 text-white/85">Choose your team. Keep this phone as your team&apos;s buzzer and answer pad.</p>
+          <div className="money mt-3 text-3xl tracking-[0.2em]">{code}</div>
+        </header>
+        {closed ? <p className="rounded-xl bg-gold/10 p-4">The host has closed check-in. Ask them to unlock the room.</p> : (
+          <>
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-2 text-lg font-semibold">Team seats</legend>
+              {view.teams.map((t) => {
+                const taken = occupied.has(t.id);
+                return <button type="button" key={t.id} disabled={taken || busy} aria-pressed={teamId === t.id} onClick={() => { setTeamId(t.id); setName(t.name); }} className={`flex min-h-16 items-center justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left ${teamId === t.id ? "border-gold bg-gold/10" : "border-line bg-panel"} disabled:opacity-50`}>
+                  <span className="text-lg font-bold" style={{ color: t.color }}>{t.name}</span>
+                  <span className="text-sm">{taken ? "Phone connected" : teamId === t.id ? "Selected ✓" : "Available"}</span>
+                </button>;
+              })}
+            </fieldset>
+            <label className="flex flex-col gap-2">
+              <span className="font-semibold">Team name</span>
+              <input className="input !py-3 text-lg" maxLength={24} value={name} onChange={(e) => setName(e.target.value)} placeholder={selected?.name ?? "Choose a seat above"} autoComplete="off" />
+              <span className="text-sm text-white/75">Keep the host&apos;s name or choose your own. It appears on the projector.</span>
+            </label>
+            {err && <p role="alert" className="rounded-xl bg-red-900/50 p-3 text-red-100">{err}</p>}
+            <button className="btn-primary min-h-14 text-xl" disabled={busy || !selected || occupied.has(selected.id) || !name.trim()} onClick={() => submit(false)}>{busy ? "Joining…" : "Join as this team"}</button>
+          </>
+        )}
+        <p className="text-sm text-white/75">Already joined? Refresh this phone to reconnect with the same team and score. For a replacement phone, ask the host to release your seat.</p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 p-4">
@@ -722,6 +759,15 @@ function LobbyWait({ view, mini, emit, now }: { view: GameView; mini: MiniView |
   const p = view.players.find((x) => x.id === me.playerId)!;
   const [edit, setEdit] = useState<"name" | "face" | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  if (view.settings.classroomTeams) return (
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-5 py-8 text-center">
+      <div className="text-sm uppercase tracking-widest text-gold">Team phone ready</div>
+      <h1 className="text-4xl font-bold">{contestantName(view, me.contestantId)}</h1>
+      <p className="text-lg text-white/85">Discuss each question together. Use this phone to buzz in or submit one team answer when the host opens all-play.</p>
+      <div className="rounded-2xl bg-gold/10 p-5 text-xl font-semibold" role="status">{left !== null ? `Starting in ${Math.max(1, Math.ceil(left / 1000))}…` : "Waiting for the host to start"}</div>
+      <p className="text-white/75">{count} of {view.teams.length} team phones joined</p>
+    </div>
+  );
   if (edit) return <EditCard view={view} emit={emit} start={edit} onClose={() => setEdit(null)} />;
   // A bigger lobby game needs the whole screen: the game goes first, everything else waits.
   if (left === null && mini?.round && PARTY_KINDS[mini.round.kind]) {

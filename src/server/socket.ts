@@ -287,6 +287,13 @@ export const playerHandlers: Partial<Record<ClientEvent, Handler>> = {
 
     // A watch token only ever lets someone into the audience.
     const audience = !!payload.audience || !!socket.data.viaWatch;
+    if (!audience && game.state.settings.classroomTeams) {
+      const team = game.state.teams.find((t) => t.id === payload.teamId);
+      if (!team) return { ok: false, error: "Choose an available team first" };
+      if (Object.values(game.state.players).some((p) => !p.removed && !p.audience && p.teamId === team.id)) {
+        return { ok: false, error: "That team already has a phone. Choose another team or ask the host to release its seat." };
+      }
+    }
     const playerId = `${audience ? "a" : "p"}_${nanoid(10)}`;
     const res = game.dispatch(
       audience ? { type: "player/join", playerId, name, signature: null, audience: true } : { type: "player/join", playerId, name, signature, avatar, teamId: payload.teamId ?? null },
@@ -300,7 +307,7 @@ export const playerHandlers: Partial<Record<ClientEvent, Handler>> = {
         ? "The lobby is locked"
         : s.phase !== "lobby" && !s.settings.allowLateJoin
           ? "This game has already started"
-          : "Couldn't join (game full or name not allowed)";
+          : "Couldn't join (game full, team in use, or name not allowed)";
       return { ok: false, error: reason };
     }
     const token = randomToken();

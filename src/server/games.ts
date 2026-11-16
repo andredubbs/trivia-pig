@@ -8,12 +8,12 @@ import { summarize } from "./live";
 
 export function userDefaults(user: Pick<User, "gameDefaults">): Settings {
   const parsed = settingsSchema.safeParse(user.gameDefaults ?? {});
-  return parsed.success ? parsed.data : DEFAULT_SETTINGS;
+  return { ...(parsed.success ? parsed.data : DEFAULT_SETTINGS), classroomTeams: true, mode: "team", lobbyGame: false, avatars: false, audience: false, vipStart: false, reclaimSeats: false };
 }
 
 async function freeCode(): Promise<string> {
   for (let i = 0; i < 20; i++) {
-    const code = gameCode(5);
+    const code = gameCode(4);
     const clash = await prisma.game.findFirst({ where: { code, status: { not: "FINISHED" } }, select: { id: true } });
     if (!clash) return code;
   }
@@ -29,7 +29,8 @@ export async function createGame(opts: {
   initialLog?: LogEntry[];
   rematchOfId?: string;
 }) {
-  const setup: Setup = { board: boardContentSchema.parse(opts.content), settings: opts.settings };
+  const settings = settingsSchema.parse({ ...opts.settings, classroomTeams: true, mode: "team" });
+  const setup: Setup = { board: boardContentSchema.parse(opts.content), settings };
   const log = opts.initialLog ?? [];
   const state = replay(setup, log);
   return prisma.game.create({
@@ -52,11 +53,12 @@ export function rematchLog(prevSetup: Setup, prevLog: LogEntry[]): LogEntry[] {
   const out: LogEntry[] = [];
   const now = Date.now();
   const push = (action: GameAction) => out.push({ seq: out.length + 1, at: now, by: "system", action });
-  for (const t of s.teams) push({ type: "team/create", teamId: t.id, name: t.name, color: t.color });
+  if (!s.settings.classroomTeams) for (const t of s.teams) push({ type: "team/create", teamId: t.id, name: t.name, color: t.color });
   for (const id of s.playerOrder) {
     const p = s.players[id];
     if (!p || p.removed) continue;
     push(p.audience ? { type: "player/join", playerId: p.id, name: p.name, signature: null, audience: true } : { type: "player/join", playerId: p.id, name: p.name, signature: p.signature, avatar: p.avatar ?? null, teamId: p.teamId });
   }
+  if (s.settings.classroomTeams) for (const t of s.teams) push({ type: "team/rename", teamId: t.id, name: t.name });
   return out;
 }

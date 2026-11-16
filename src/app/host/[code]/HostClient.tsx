@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useGame } from "@/client/useGame";
 import { useWakeLock } from "@/client/useWakeLock";
 import { sound } from "@/client/sound";
+import { classroomBackup } from "@/shared/classroomBackup";
 import type { GameView } from "@/engine/views";
 import type { FxEvent, HostIntent, PresenceView } from "@/shared/protocol";
 import { ConnBanner, StatusDot, contestants, formatScore, useBoardTheme } from "@/components/game";
@@ -130,6 +131,23 @@ export default function HostClient({ code, gameId, role }: { code: string; gameI
       )}
       <main className="flex h-dvh flex-col overflow-hidden bg-ui-bg pb-[env(safe-area-inset-bottom)]">
         <TopBar onPanel={setPanel} status={status} />
+        {view.settings.classroomTeams && <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-line bg-panel px-3 py-2 text-sm">
+          {!scorekeeper && <button type="button" className="min-h-11 rounded-lg border border-gold/40 px-3 font-semibold text-gold" aria-pressed={view.settings.sound.muted} onClick={() => act({ type: "settings/update", settings: { sound: { muted: !view.settings.sound.muted } } })}>
+            {view.settings.sound.muted ? "🔇 Sound muted" : "🔊 Mute sound"}
+          </button>}
+          <button type="button" className="font-semibold text-gold underline underline-offset-4" onClick={() => {
+            const backup = classroomBackup(view);
+            const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" }));
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `plant-pathology-scores-${view.code}.json`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            toast("Score backup downloaded. Restore it in the saved offline rescue file.");
+          }}>Save score backup</button>
+          <a className="font-semibold text-gold underline underline-offset-4" href="/offline.html" download="plant-pathology-offline.html">Download offline rescue</a>
+          <span className="text-xs text-white/80">{status === "online" ? "Save the rescue file before class." : "Backup uses the last received scores. Open your saved rescue file and restore this backup."}</span>
+        </div>}
         {/* Phones: toggle between game controls and scores. Tablets/laptops: side by side. */}
         <div className="flex shrink-0 border-b border-line bg-panel md:hidden">
           {(["game", "scores"] as const).map((t) => (

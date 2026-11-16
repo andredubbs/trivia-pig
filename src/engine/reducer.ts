@@ -34,17 +34,20 @@ export type Cue =
   | { cue: "announce" };
 
 export function initialState(setup: Setup): GameState {
+  const settings = { ...DEFAULT_SETTINGS, ...setup.settings };
+  if (settings.classroomTeams) settings.mode = "team";
+  const teams = settings.classroomTeams ? classroomTeams(settings.teamCount) : [];
   return {
     phase: "lobby",
-    settings: { ...DEFAULT_SETTINGS, ...setup.settings },
+    settings,
     board: structuredClone(setup.board),
     roundIndex: 0,
     dailyDoubles: {},
     used: {},
     players: {},
     playerOrder: [],
-    teams: [],
-    scores: {},
+    teams,
+    scores: Object.fromEntries(teams.map((t) => [t.id, 0])),
     controlId: null,
     clue: null,
     final: null,
@@ -63,6 +66,15 @@ export function initialState(setup: Setup): GameState {
     finishedAt: null,
     version: 0,
   };
+}
+
+const CLASSROOM_COLORS = ["#b8efb2", "#ffe08a", "#9bd9ff", "#ffc4db", "#e1c6ff", "#b7f0e6"];
+function classroomTeams(count: number) {
+  return Array.from({ length: count }, (_, i) => ({ id: `classroom_${i + 1}`, name: `Team ${i + 1}`, color: CLASSROOM_COLORS[i] }));
+}
+
+function teamAvailable(s: GameState, teamId: string | null, exceptPlayer?: string): boolean {
+  return !!teamId && s.teams.some((t) => t.id === teamId) && !activePlayers(s).some((p) => p.id !== exceptPlayer && p.teamId === teamId);
 }
 
 // ---------------------------------------------------------------------------
@@ -206,6 +218,7 @@ function reduce(s: GameState, entry: LogEntry, fx: Cue[]): boolean {
       const existing = own(s.players, a.playerId);
       if (existing) {
         if (existing.banned) return false;
+        if (s.settings.classroomTeams && !existing.audience && !teamAvailable(s, existing.teamId, existing.id)) return false;
         existing.removed = false;
         if (a.name) existing.name = a.name;
         if (a.signature) existing.signature = a.signature;
@@ -237,6 +250,7 @@ function reduce(s: GameState, entry: LogEntry, fx: Cue[]): boolean {
       if (s.phase !== "lobby" && !s.settings.allowLateJoin) return false;
       if (activePlayers(s).length >= (s.settings.maxPlayers || HARD_MAX_PLAYERS)) return false;
       const teamId = a.teamId && s.teams.some((t) => t.id === a.teamId) ? a.teamId : null;
+      if (s.settings.classroomTeams && !teamAvailable(s, teamId)) return false;
       s.players[a.playerId] = {
         id: a.playerId,
         name: a.name,
@@ -252,6 +266,8 @@ function reduce(s: GameState, entry: LogEntry, fx: Cue[]): boolean {
         ...(a.bot ? { bot: true } : {}),
       };
       s.playerOrder.push(a.playerId);
+      // The joining phone supplies its team's name; the host can rename it later.
+      if (s.settings.classroomTeams) s.teams.find((t) => t.id === teamId)!.name = a.name;
       if (own(s.scores, a.playerId) === undefined) s.scores[a.playerId] = 0;
       fx.push({ cue: "join", playerId: a.playerId });
       return true;
@@ -351,6 +367,19 @@ function reduce(s: GameState, entry: LogEntry, fx: Cue[]): boolean {
     case "settings/update": {
       const patch = { ...a.settings };
       if (s.phase !== "lobby") delete patch.mode;
+      if (s.settings.classroomTeams) {
+        delete patch.classroomTeams;
+        patch.mode = "team";
+        if (s.phase !== "lobby") delete patch.teamCount;
+        if (patch.teamCount !== undefined) {
+          if (!Number.isInteger(patch.teamCount) || patch.teamCount < 2 || patch.teamCount > 6) return false;
+          const next = classroomTeams(patch.teamCount);
+          // Never strand a phone when reducing the room size.
+          if (activePlayers(s).some((p) => !next.some((t) => t.id === p.teamId))) return false;
+          s.teams = next.map((t) => s.teams.find((old) => old.id === t.id) ?? t);
+          for (const t of s.teams) s.scores[t.id] ??= 0;
+        }
+      }
       s.settings = mergeSettings(s.settings, patch);
       return true;
     }
@@ -361,6 +390,10 @@ function reduce(s: GameState, entry: LogEntry, fx: Cue[]): boolean {
       const p = own(s.players, a.playerId);
       if (!p || !a.name.trim()) return false;
       p.name = a.name.trim();
+      if (s.settings.classroomTeams) {
+        const team = s.teams.find((t) => t.id === p.teamId);
+        if (team) team.name = p.name;
+      }
       return true;
     }
     case "player/resetSignature": {
@@ -397,12 +430,14 @@ function reduce(s: GameState, entry: LogEntry, fx: Cue[]): boolean {
     case "player/restore": {
       const p = own(s.players, a.playerId);
       if (!p) return false;
+      if (s.settings.classroomTeams && !p.audience && !teamAvailable(s, p.teamId, p.id)) return false;
       p.removed = false;
       p.banned = false;
       s.bannedNames = s.bannedNames.filter((n) => n !== normName(p.name));
       return true;
     }
     case "team/create": {
+      if (s.settings.classroomTeams) return false;
       if (UNSAFE_IDS.has(a.teamId) || s.teams.some((t) => t.id === a.teamId)) return false;
       if (s.settings.maxTeams > 0 && s.teams.length >= s.settings.maxTeams) return false;
       s.teams.push({ id: a.teamId, name: a.name, color: a.color });
@@ -413,9 +448,11 @@ function reduce(s: GameState, entry: LogEntry, fx: Cue[]): boolean {
       const t = s.teams.find((t) => t.id === a.teamId);
       if (!t || !a.name.trim()) return false;
       t.name = a.name.trim();
+      if (s.settings.classroomTeams) for (const p of activePlayers(s)) if (p.teamId === t.id) p.name = t.name;
       return true;
     }
     case "team/delete": {
+      if (s.settings.classroomTeams) return false;
       if (!s.teams.some((t) => t.id === a.teamId)) return false;
       s.teams = s.teams.filter((t) => t.id !== a.teamId);
       for (const p of Object.values(s.players)) if (p.teamId === a.teamId) p.teamId = null;
@@ -425,11 +462,13 @@ function reduce(s: GameState, entry: LogEntry, fx: Cue[]): boolean {
     case "team/assign": {
       const p = own(s.players, a.playerId);
       if (!p) return false;
+      if (s.settings.classroomTeams && (s.phase !== "lobby" || !teamAvailable(s, a.teamId, p.id))) return false;
       if (a.teamId !== null && !s.teams.some((t) => t.id === a.teamId)) return false;
       p.teamId = a.teamId;
       return true;
     }
     case "team/autoBalance": {
+      if (s.settings.classroomTeams) return false;
       for (const [pid, tid] of Object.entries(a.assignments)) {
         const p = own(s.players, pid);
         if (p && s.teams.some((t) => t.id === tid)) p.teamId = tid;

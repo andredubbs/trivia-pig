@@ -12,3 +12,10 @@ deploy/homelab/.env
 deploy/homelab/data
 deploy/homelab/.deploy-*
 deploy/homelab/.update.lock
+
+# Course figures are generated on Air from the private canonical source copy.
+public/cox/
+artifacts/
+*.dump
+*.partial
+deploy/cox-revision

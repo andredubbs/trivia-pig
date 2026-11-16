@@ -21,7 +21,7 @@ export function PlayersPanel() {
   const playerRow = (p: (typeof view.players)[number]) => (
     <div
       key={p.id}
-      draggable={teamMode}
+      draggable={teamMode && !view.settings.classroomTeams}
       onDragStart={() => setDragging(p.id)}
       onDragEnd={() => setDragging(null)}
       className="rounded-xl border border-line bg-panel-2 p-2"
@@ -49,8 +49,8 @@ export function PlayersPanel() {
         <SmallBtn onClick={() => confirm(`Erase ${p.name}'s drawing?`) && act({ type: "player/resetSignature", playerId: p.id })}>Reset drawing</SmallBtn>
         {teamMode && (
           <select className="rounded border border-line bg-panel px-1" value={p.teamId ?? ""} onChange={(e) => act({ type: "team/assign", playerId: p.id, teamId: e.target.value || null })}>
-            <option value="">No team</option>
-            {view.teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+            {!view.settings.classroomTeams && <option value="">No team</option>}
+            {view.teams.map((t) => <option key={t.id} value={t.id} disabled={view.settings.classroomTeams && active.some((other) => other.id !== p.id && other.teamId === t.id)}>{t.name}</option>)}
           </select>
         )}
         <SmallBtn danger onClick={() => confirm(`Kick ${p.name}? They can rejoin.`) && act({ type: "player/kick", playerId: p.id })}>Kick</SmallBtn>
@@ -76,10 +76,10 @@ export function PlayersPanel() {
               <div className="mt-2 flex flex-col gap-2">{active.filter((p) => p.teamId === t.id).map(playerRow)}</div>
             </div>
           ))}
-          <div onDragOver={(e) => e.preventDefault()} onDrop={() => dragging && act({ type: "team/assign", playerId: dragging, teamId: null })} className="rounded-2xl border-2 border-dashed border-line p-2">
+          {!view.settings.classroomTeams && <div onDragOver={(e) => e.preventDefault()} onDrop={() => dragging && act({ type: "team/assign", playerId: dragging, teamId: null })} className="rounded-2xl border-2 border-dashed border-line p-2">
             <div className="mb-2 text-sm text-white/60">Unassigned (drag onto a team, or use the dropdown)</div>
             <div className="flex flex-col gap-2">{active.filter((p) => !p.teamId).map(playerRow)}</div>
-          </div>
+          </div>}
         </>
       ) : (
         <div className="flex flex-col gap-2">
@@ -121,6 +121,7 @@ export function PlayersPanel() {
 function TeamTools() {
   const { view, act } = useHost();
   const [name, setName] = useState("");
+  if (view.settings.classroomTeams) return <p className="text-sm text-white/80">{view.teams.length} teams · one phone each. Rename a team below. Use Kick to release a phone seat; its team score stays intact. Choose 2–6 teams in the lobby.</p>;
   return (
     <div className="flex flex-col gap-2">
       <form className="flex gap-2" onSubmit={async (e) => { e.preventDefault(); if (name.trim() && (await act({ type: "team/create", name: name.trim() }))) setName(""); }}>
@@ -146,7 +147,7 @@ function TeamHeader({ teamId }: { teamId: string }) {
     <div className="flex items-center gap-2">
       <b style={{ color: t.color }}>{t.name}</b>
       <SmallBtn onClick={() => setEdit(true)}>Rename</SmallBtn>
-      <SmallBtn danger onClick={() => confirm(`Delete team ${t.name}?`) && act({ type: "team/delete", teamId })}>Delete</SmallBtn>
+      {!view.settings.classroomTeams && <SmallBtn danger onClick={() => confirm(`Delete team ${t.name}?`) && act({ type: "team/delete", teamId })}>Delete</SmallBtn>}
     </div>
   );
 }
@@ -323,14 +324,14 @@ export function SettingsPanel() {
   const set = (patch: Partial<Settings>) => act({ type: "settings/update", settings: patch });
   return (
     <div className="flex flex-col gap-4">
-      <Field label="Mode">
+      {!s.classroomTeams && <Field label="Mode">
         <div className="flex gap-2">
           {(["solo", "team"] as const).map((m) => (
             <button key={m} disabled={!lobby} className={`btn-ghost flex-1 ${s.mode === m ? "!border-gold !text-gold" : ""}`} onClick={() => set({ mode: m })}>{m === "solo" ? "Individual" : "Teams"}</button>
           ))}
         </div>
         {!lobby && <span className="text-xs text-white/40">Mode can only change in the lobby.</span>}
-      </Field>
+      </Field>}
       <Field label="Clues">
         <div className="flex gap-2">
           {([false, true] as const).map((v) => (
@@ -341,8 +342,8 @@ export function SettingsPanel() {
           {s.everyoneAnswers ? "Every clue opens for all players to write an answer. Right answers score, wrong answers cost nothing." : "First to buzz answers. You can still open any single clue for everyone."}
         </span>
       </Field>
-      <NumField label="Max players (0 = up to 500)" value={s.maxPlayers} min={0} max={100000} onSave={(v) => set({ maxPlayers: v })} />
-      {s.mode === "team" && <NumField label="Max teams (0 = no limit)" value={s.maxTeams} min={0} max={100000} onSave={(v) => set({ maxTeams: v })} />}
+      {!s.classroomTeams && <NumField label="Max players (0 = up to 500)" value={s.maxPlayers} min={0} max={100000} onSave={(v) => set({ maxPlayers: v })} />}
+      {s.mode === "team" && !s.classroomTeams && <NumField label="Max teams (0 = no limit)" value={s.maxTeams} min={0} max={100000} onSave={(v) => set({ maxTeams: v })} />}
       <Toggle label="Allow late joins after the game starts" checked={s.allowLateJoin} onChange={(v) => set({ allowLateJoin: v })} />
       <h3 className="mt-2 font-semibold">Party</h3>
       <Toggle label="First player in can start the game from their phone (👑). Off: only the host starts it" checked={s.vipStart} onChange={(v) => set({ vipStart: v })} />

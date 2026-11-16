@@ -9,7 +9,7 @@ export function siteUrl(): URL {
   }
 }
 
-export const TAGLINE = "Trivia night on your TV, with every phone as a buzzer";
+export const TAGLINE = "Plant pathology on the projector, with one phone per team";
 export const DESCRIPTION =
-  "Free, open-source quiz-show game for game nights and classrooms. Put the board on a TV, host from any device, and let players buzz in from their phones. No app to install.";
-export const SITE_TITLE = `${APP_NAME}: trivia night on your TV, with every phone as a buzzer`;
+  "A plant pathology classroom quiz with 2–6 teams, a shared projector, and one phone per team. Discuss, diagnose, buzz in, and answer together.";
+export const SITE_TITLE = `${APP_NAME}: plant pathology on the projector`;

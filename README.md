@@ -1,5 +1,7 @@
 # 🐷 Trivia Pig (jeppidy)
 
+**Cox classroom fork:** use [README-COX.md](README-COX.md) for classroom setup, Air deployment, offline fallback and credential scope; [DELIVERY.md](DELIVERY.md) records public preview and validation evidence. Upstream documentation follows.
+
 A self-hosted, real-time quiz-show game in the style of Jeopardy!: a big-screen **display**, **host
 controls** on a laptop, iPad, or phone, and **buzzers** on everyone's phone. Players sign their names by
 hand, multi-color, and write their Final Jeopardy answers the same way.

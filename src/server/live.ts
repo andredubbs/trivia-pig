@@ -565,6 +565,7 @@ export class LiveGame {
   // ---------------------------------------------------------------- presence
 
   attach(socket: GameSocket) {
+    if (socket.data.playerId) this.releaseOtherControllers(socket, socket.data.playerId);
     this.sockets.set(socket.id, socket);
     if (socket.data.playerId) this.playerLastSeen.delete(socket.data.playerId);
     this.sendState(socket);
@@ -584,10 +585,22 @@ export class LiveGame {
 
   /** A player socket just joined/rejoined: bind it to its player id. */
   bindPlayer(socket: GameSocket, playerId: string) {
+    this.releaseOtherControllers(socket, playerId);
     socket.data.playerId = playerId;
     this.playerLastSeen.delete(playerId);
     this.sendState(socket);
     this.broadcastPresence();
+  }
+
+  /** A reconnected team phone replaces its old connection, retaining its token and score. */
+  private releaseOtherControllers(socket: GameSocket, playerId: string) {
+    if (!this.state.settings.classroomTeams) return;
+    for (const other of this.sockets.values()) {
+      if (other.id !== socket.id && other.data.role === "player" && other.data.playerId === playerId) {
+        (other as Socket).emit("error", { message: "This team's controls moved to another connection." });
+        other.disconnect(true);
+      }
+    }
   }
 
   presence(): PresenceView {

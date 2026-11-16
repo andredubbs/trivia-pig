@@ -14,8 +14,8 @@ export function safeEqual(a: string, b: string): boolean {
   return ab.length === bb.length && timingSafeEqual(ab, bb);
 }
 
-const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-export function gameCode(length = 5): string {
+const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+export function gameCode(length = 4): string {
   // randomInt is uniform for any alphabet size (a byte modulo the length is only uniform when
   // the length divides 256).
   let out = "";

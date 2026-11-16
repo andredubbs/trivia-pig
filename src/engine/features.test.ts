@@ -90,7 +90,7 @@ describe("all-play clues", () => {
     expect(replay({ board: g.setup.board, settings: g.setup.settings }, g.log).scores).toEqual(g.state.scores);
   });
 
-  it("hides other answers until they are judged, and the real answer until revealed", () => {
+  it("hides other submissions and the real answer until reveal, including after judging", () => {
     const { g, host, player, clue } = setup();
     host({ type: "clue/open", clueId: clue(0, 1), allPlay: true });
     player({ type: "player/allPlayAnswer", playerId: "a", drawing: null, typed: "ann says" });
@@ -107,7 +107,8 @@ describe("all-play clues", () => {
     host({ type: "allPlay/close" });
     host({ type: "allPlay/judge", contestantId: "a", correct: true });
     const d2 = view(g, "display");
-    expect(d2.clue?.allPlay?.typed).toEqual({ a: "ann says" });
+    expect(d2.clue?.allPlay?.typed).toEqual({});
+    expect(JSON.stringify(view(g, "player", "b"))).not.toContain("ann says");
     expect(d2.clue?.answer).toBeNull();
     host({ type: "clue/reveal" });
     const d3 = view(g, "display");

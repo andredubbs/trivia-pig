@@ -7,6 +7,9 @@ export const HARD_MAX_PLAYERS = 500;
 export const HARD_MAX_AUDIENCE = 5000;
 
 export const settingsSchema = z.object({
+  /** Classroom rooms have a fixed set of teams and one phone per team. */
+  classroomTeams: z.boolean().default(false),
+  teamCount: z.number().int().min(2).max(6).default(6),
   mode: z.enum(["solo", "team"]).default("solo"),
   /** 0 means no limit of the host's own (the default); HARD_MAX_PLAYERS still applies. */
   maxPlayers: z.number().int().min(0).max(100000).default(0),
@@ -62,12 +65,12 @@ export const settingsSchema = z.object({
   sound: z
     .object({
       master: z.number().min(0).max(1).default(0.8),
-      muted: z.boolean().default(false),
+      muted: z.boolean().default(true),
       music: z.boolean().default(true),
       sfx: z.boolean().default(true),
-      playerBuzzSound: z.boolean().default(true),
+      playerBuzzSound: z.boolean().default(false),
     })
-    .default({ master: 0.8, muted: false, music: true, sfx: true, playerBuzzSound: true }),
+    .default({ master: 0.8, muted: true, music: true, sfx: true, playerBuzzSound: false }),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 export const DEFAULT_SETTINGS: Settings = settingsSchema.parse({});

@@ -52,7 +52,7 @@ export interface AllPlayView {
   endsAt: number;
   hasAnswer: Record<string, boolean>;
   judged: Record<string, boolean>;
-  /** Everything for the host; for others only judged entries (all once the answer is revealed). */
+  /** Everything for the host; for others only after the clue is revealed. */
   answers: Record<string, Drawing>;
   typed: Record<string, string>;
 }
@@ -242,7 +242,7 @@ export function buildView(
       const answers: Record<string, Drawing> = {};
       const typed: Record<string, string> = {};
       for (const id of ids) {
-        if (!isHost && !revealed && ap.judged[id] === undefined) continue;
+        if (!isHost && !revealed) continue;
         if (ap.answers[id]) answers[id] = ap.answers[id];
         if (ap.typed[id] !== undefined) typed[id] = ap.typed[id];
       }

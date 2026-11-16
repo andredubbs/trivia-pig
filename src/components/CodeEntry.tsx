@@ -7,7 +7,7 @@ import { useState } from "react";
 export function CodeEntry({ target, cta, initial = "", focus = true }: { target: string; cta: string; initial?: string; focus?: boolean }) {
   const router = useRouter();
   const [code, setCode] = useState(initial.toUpperCase());
-  const valid = /^[A-Z0-9]{4,6}$/.test(code);
+  const valid = /^[A-Z]{4}$/.test(code);
   return (
     <form
       onSubmit={(e) => {
@@ -19,7 +19,7 @@ export function CodeEntry({ target, cta, initial = "", focus = true }: { target:
       <input
         className="input text-center font-[family-name:var(--font-display)] text-4xl tracking-[0.3em] uppercase"
         value={code}
-        onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
+        onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4))}
         placeholder="CODE"
         inputMode="text"
         autoCapitalize="characters"

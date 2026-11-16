@@ -105,9 +105,9 @@ function GameKindModal({ busy, onStart, onClose }: { busy: boolean; onStart: (k:
   const [kind, setKind] = useState<GameKind>(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(KIND_KEY) ?? "null") as Partial<GameKind> | null;
-      if (saved) return { teams: !!saved.teams, everyone: !!saved.everyone, quick: !!saved.quick };
+      if (saved) return { teams: true, everyone: !!saved.everyone, quick: !!saved.quick };
     } catch {}
-    return { teams: false, everyone: false, quick: false };
+    return { teams: true, everyone: false, quick: false };
   });
   const set = (patch: Partial<GameKind>) => setKind((k) => ({ ...k, ...patch }));
   return (
@@ -115,11 +115,8 @@ function GameKindModal({ busy, onStart, onClose }: { busy: boolean; onStart: (k:
       <div className="card flex w-full max-w-md flex-col gap-4" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="How do you want to play?">
         <h2 className="text-xl font-bold">How do you want to play?</h2>
         <div>
-          <div className="mb-1 text-sm text-white/70">Who scores</div>
-          <div className="flex gap-2">
-            <KindChoice on={!kind.teams} title="Individuals" hint="Everyone for themselves" onClick={() => set({ teams: false })} />
-            <KindChoice on={kind.teams} title="Teams" hint="Phones join a team and share a score" onClick={() => set({ teams: true })} />
-          </div>
+          <div className="font-semibold text-gold">Classroom teams</div>
+          <p className="mt-1 text-sm text-white/85">Six teams by default, one phone per team. Choose 2–6 and rename teams in the host lobby.</p>
         </div>
         <div>
           <div className="mb-1 text-sm text-white/70">Clues</div>

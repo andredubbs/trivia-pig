@@ -55,3 +55,24 @@ A physical Air reboot and actual classroom Wi-Fi/projector/iOS Safari were not e
 Final public rehearsal on the lighter-red build: **159/159 PASS**, 63 screenshots, 1,531 public state packets audited, zero unrevealed answer leaks and zero browser errors. Actual app restart recovered host/display/six phones and persisted scores. Reports: `evidence-public-verified/round2/report.json` and `display-regression-report.json`; logs: `e2e-round2-final.log`, `display-round2-final.log`. Superseded attempt 1 PNGs were removed; compact prior report/contrast trace JSON remains for the diagnostic record. **PHLL was not used for tests** and remains the fresh demo lobby.
 
 Final cleanup: Air reports **4.0 GiB available** (`df -h /`). Retained evidence is 83 MiB, production `.next` is 42 MiB after removing `.next/cache`, private conversion/answer assets are 16 MiB. Post-migration backup `cox-trivia-d-20261116T012954Z.dump` was catalog-validated (84,414 bytes). Backup retention remains seven dumps.
+
+## Released revision and final checks
+
+Implementation commit: [`d0610f7`](https://github.com/andredubbs/trivia-pig/commit/d0610f7), pushed to [`cox-classroom`](https://github.com/andredubbs/trivia-pig/tree/cox-classroom). Air source checkout is clean at this commit. After the final service restart, public `/readyz` returned `ok:true, db:true, version:d0610f7, unsaved:0`; `/healthz` returned `ok`. The authenticated ready-lobby check confirmed PHLL still has six empty teams, lobby phase, mute enabled and two random Daily Doubles. Its fresh capture is `evidence-public-verified/ready-lobby-1280x720.png`.
+
+Other VPS sites rechecked: `andyandcompany.com` 200, `stinkers.town` 200, bridge root `192-241-145-6.sslip.io` expected 404. Round 2 did not edit or reload Caddy. Existing proxy rollback and backup path remain in README-COX.md.
+
+Exact additional Air commands, from the app directory (credential values stay inside the scoped route):
+
+```sh
+export PATH="$PWD/scripts/cox-deploy/bin:/opt/homebrew/bin:/usr/bin:/bin"
+export COX_PLAYWRIGHT_MODULE=/Users/andrewfuller/Projects/cox-trivia-d/test-tools/node_modules/playwright-core/index.mjs
+export COX_CHROMIUM_EXECUTABLE='/Users/andrewfuller/Library/Caches/ms-playwright/chromium-1243/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing'
+export COX_EVIDENCE_DIR=../evidence-public-verified/round2
+doppler run --project cox-jeopardy-d --config prd --only-secrets COX_ANDREW_PASSWORD -- node scripts/cox-round2-regression.mjs
+doppler run --project cox-jeopardy-d --config prd --only-secrets COX_KERIK_PASSWORD -- node scripts/cox-check-cohost.mjs
+doppler run --project cox-jeopardy-d --config prd --only-secrets DATABASE_URL -- npx tsx scripts/cox-import.ts --owner-email andrew@cox-classroom.invalid
+bash scripts/cox-deploy/backup.sh
+```
+
+No coordinator integration action is required to use this deployed preview. Before class, keep the Air powered and logged in, open PHLL on the host/projector, and download the offline rescue. Use the documented recovery sequence if it restarts.

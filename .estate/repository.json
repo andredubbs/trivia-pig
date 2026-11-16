@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "repository": "andredubbs/trivia-pig",
+  "description": "Owned active fork of the real-time Jeopardy-style game with shared engine, host/display/player views and server contracts.",
+  "runtime": [
+    "Node.js >=20.11 (checks use maintained Node24)",
+    "TypeScript / Next.js / Vitest / Prisma client generation"
+  ],
+  "execution": {
+    "device": "asus",
+    "workload": "checks",
+    "require_os": "Linux",
+    "memory_mib": 1024,
+    "disk_mib": 1536
+  },
+  "setup": [
+    {
+      "id": "node-dependencies",
+      "run": "npm ci --ignore-scripts --no-audit --no-fund",
+      "purpose": "Install committed package-lock dependencies without arbitrary install hooks or browser/runtime downloads.",
+      "timeout_seconds": 600
+    },
+    {
+      "id": "prisma-client",
+      "run": "./node_modules/.bin/prisma generate",
+      "purpose": "Existing build first step: generate local client types only; no DB migration, connection or seed.",
+      "timeout_seconds": 180
+    }
+  ],
+  "checks": {
+    "integrity": [
+      {
+        "id": "descriptor-json",
+        "run": "python3 -m json.tool .estate/repository.json >/dev/null",
+        "purpose": "JSON integrity only; trusted schema validation is separate.",
+        "timeout_seconds": 180
+      },
+      {
+        "id": "types",
+        "run": "./node_modules/.bin/tsc --noEmit",
+        "purpose": "Existing package typecheck command; source/type integrity.",
+        "timeout_seconds": 240
+      },
+      {
+        "id": "lint",
+        "run": "./node_modules/.bin/eslint .",
+        "purpose": "Existing configured source lint command.",
+        "timeout_seconds": 240
+      }
+    ],
+    "targeted": [
+      {
+        "id": "game-engine",
+        "run": "./node_modules/.bin/vitest run src/engine src/shared",
+        "purpose": "Existing game state, scoring, board import, answer matching and fuzz/property fixtures.",
+        "timeout_seconds": 240
+      }
+    ],
+    "integration": [
+      {
+        "id": "server-contracts",
+        "run": "./node_modules/.bin/vitest run src/server",
+        "purpose": "Existing server/auth/socket/storage-boundary and pure draft-format fixtures; no provider draft call or DB service.",
+        "timeout_seconds": 300
+      }
+    ],
+    "challenge": [],
+    "observe": []
+  },
+  "protected_paths": [
+    ".estate/repository.json",
+    "src/**/*.test.ts",
+    "vitest.config.ts",
+    "eslint.config.mjs"
+  ],
+  "delivery": {
+    "build": "npm run build generates Prisma client, Next.js artifacts and the custom server. This source acceptance lane does not run a production build or DB deployment.",
+    "run": "npm start serves dist/server.js; npm run dev uses tsx. Docker/Fly/self-hosted deployment paths remain owned by the project; none is invoked.",
+    "observe": "Actual synchronized host/display/player flows, room/auth boundaries and database migrations require the running owned deployment. Source fixtures do not prove public/upstream instance health.",
+    "recovery": "Preserve database/user board/game state and prior deploy image. Restore the previous owned release through its deployment path and use compatible schema recovery; never point tests at a real database or send mail/model requests."
+  },
+  "consumers": [
+    "Owned Trivia Pig host/display/player browser clients"
+  ],
+  "external_dependencies": [
+    "PostgreSQL and optional storage/OIDC/mail/Anthropic providers for production only"
+  ],
+  "coverage_notes": [
+    "Protected paths contain independent check definitions/fixtures only; product implementation, source data, manifests and runtime configuration remain candidate-visible.",
+    "Empty stages denote absent coverage. No live observation/deployment or provider/model call is performed by this contract.",
+    "Fork status does not exclude this owned active project. The descriptor applies to andredubbs/trivia-pig, not the upstream maintainer or public instance.",
+    "Vitest uses the Node environment and existing pure/mock server boundaries. No database migration/seed, model draft, mail, provider call, browser or production deploy runs. Full Next/server build and rendered multiplayer UI remain absent coverage."
+  ]
+}

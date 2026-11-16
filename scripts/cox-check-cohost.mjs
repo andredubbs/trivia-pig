@@ -11,4 +11,11 @@ if(!response.ok) throw new Error('Kerik canonical board access failed: '+respons
 const board=await response.json();
 if(board.content.rounds.flatMap(r=>r.categories.flatMap(c=>c.clues)).length!==25) throw new Error('Unexpected canonical board');
 console.log('PASS Kerik signs in with scoped password and accesses the canonical25-clue board as co-host.');
+const answers=board.content.rounds.flatMap(r=>r.categories.flatMap(c=>c.clues)).map(q=>q.answerMedia).filter(Boolean);
+for(const media of answers) {
+ const image=await fetch(base+media.url,{headers:{cookie}});
+ if(image.status!==200 || !image.headers.get('cache-control')?.includes('no-store')) throw new Error('Co-host protected answer image denied or cacheable');
+ await image.arrayBuffer();
+}
+console.log('PASS Kerik can preview all8 protected answer images as co-host, without public reveal.');
 await fetch(base+'/api/auth/logout',{method:'POST',headers:{cookie}});

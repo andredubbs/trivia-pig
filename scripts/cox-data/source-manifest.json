@@ -1,6 +1,6 @@
 {
-  "source": "base/index.codex.html#gameData",
-  "sourceSha256": "f94db2175f297438bcd4a8ce5e3d28c2a46602ee04900d9841cad2c47a55d3fa",
+  "source": "scripts/cox-data/offline.html#gameData",
+  "sourceSha256": "1f0437ae8052e09f717e6f573864c114dab06c73a6bf2b79c69034e1f0565874",
   "gameDataSha256": "117b998c3b87b32e8ec8f86c45c3628b446589aa7c6dd3ef6538caa8b5bc745e",
   "categoryNote": "The supplied PowerPoint board labels its fifth category MANAGEMENT; the canonical gameData labels it Defense. Defense is retained without changing the original deck or any clue/answer wording.",
   "categories": [

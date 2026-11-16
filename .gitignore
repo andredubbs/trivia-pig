@@ -19,3 +19,4 @@ artifacts/
 *.dump
 *.partial
 deploy/cox-revision
+private/

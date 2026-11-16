@@ -6,6 +6,7 @@ import { describeAction } from "./history";
 import { computeAwards, currentStreaks, type Award } from "./awards";
 import { audienceMembers, contestantOf, maxDailyDoubleWager, maxFinalWager, roundComplete, vipOf } from "./reducer";
 import { PLAYER_ACTIONS, type FinalStage, type GameState, type LogEntry, type Settings, type Team, type Timer, type Screen, type ClueStage } from "./types";
+import { coxMediaForGame } from "@/shared/coxMedia";
 
 /**
  * What each audience is allowed to see. Display and player views never
@@ -225,7 +226,7 @@ export function buildView(
       text: showText ? (found?.clue.text ?? "") : null,
       media: showText ? (found?.clue.media ?? null) : null,
       answer: isHost || revealed ? (found?.clue.answer ?? "") : null,
-      answerMedia: isHost || revealed ? (found?.clue.answerMedia ?? null) : null,
+      answerMedia: isHost || revealed ? coxMediaForGame(found?.clue.answerMedia, isHost ? undefined : ctx.gameId, c.id) : null,
       answering: c.answering,
       buzzes: c.buzzes,
       attempted: c.attempted,
@@ -281,7 +282,7 @@ export function buildView(
       text: textVisible ? fc.text : null,
       media: textVisible ? (fc.media ?? null) : null,
       answer: answerVisible ? fc.answer : null,
-      answerMedia: answerVisible ? (fc.answerMedia ?? null) : null,
+      answerMedia: answerVisible ? coxMediaForGame(fc.answerMedia, isHost ? undefined : ctx.gameId, "final") : null,
       eligible: f.eligible,
       order: f.order,
       current: f.current,

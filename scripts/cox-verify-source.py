@@ -10,11 +10,18 @@ for side in manifest['slides']:
  field='text' if side['side']=='q' else 'answer'
  assert clue[field]=='\n\n'.join(side['text']),side['clueId']+' '+field
 for image in manifest['figures']:
- data=(root/'public/cox'/image['path']).read_bytes()
+ data=(root/'private/cox-build'/image['path']).read_bytes()
  assert hashlib.sha256(data).hexdigest()==image['sha256']
 offline=(root/'scripts/cox-data/offline.html').read_text()
 match=re.search(r'<script\b[^>]*\bid=["\']gameData["\'][^>]*>(.*?)</script>',offline,re.S)
 assert match and hashlib.sha256(match[1].encode()).hexdigest()==manifest['gameDataSha256']
 assert [c['name'] for c in board['rounds'][0]['categories']]==manifest['categories']
 assert all(v['url'].endswith('.png') for c in clues.values() for v in [c.get('media'),c.get('answerMedia')] if v)
+for clue in clues.values():
+ if clue.get('answerMedia'):
+  url=clue['answerMedia']['url']
+  assert re.fullmatch(r'/api/cox-media/[a-f0-9]{48}\.png',url)
+  assert (root/'private/cox-answer-media'/url.rsplit('/',1)[1]).is_file()
+assert all(re.fullmatch(r'[0-4]-[0-4]-q\.png',p.name) for p in (root/'public/cox/composites').iterdir())
+assert not (root/'public/cox/figures').exists()
 print('PASS:25 clues,50 exact text sides,15 original figures,PNG references,and offline canonical gameData hash.')

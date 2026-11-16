@@ -11,6 +11,7 @@ import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { isDeepStrictEqual } from 'node:util';
 import { finalLayout } from './cox-final-layout.mjs';
+import { displayLayout } from './cox-display-regression.mjs';
 
 const BASE = (process.env.COX_BASE_URL ?? 'https://jeopardy.192-241-145-6.sslip.io').replace(/\/$/, '');
 const EMAIL = process.env.COX_HOST_EMAIL ?? 'andrew@cox-classroom.invalid';
@@ -106,9 +107,9 @@ async function layout(entry, label) {
   }, { urls: expectedMedia, text: clue?.text, answer: clue?.stage === 'revealed' ? clue.answer : null });
   await pause(250);
   await entry.page.locator('img').evaluateAll(images => Promise.all(images.map(i => i.decode().catch(() => {}))));
-  const result = await entry.page.evaluate(() => {
+  const result = await entry.page.evaluate(urls => {
     const W = innerWidth, H = innerHeight;
-    const images = [...document.querySelectorAll('img[src*="/cox/"]')].map(img => {
+    const images = [...document.querySelectorAll('img')].filter(img => urls.includes(img.getAttribute('src'))).map(img => {
       const r = img.getBoundingClientRect();
       let clipped = r.left < -1 || r.top < -1 || r.right > W+1 || r.bottom > H+1;
       for (let p = img.parentElement; p; p = p.parentElement) {
@@ -124,7 +125,7 @@ async function layout(entry, label) {
         fontSize: parseFloat(s.fontSize), height: r.height };
     });
     return { images, text, horizontalOverflow: document.documentElement.scrollWidth > W+2 };
-  });
+  }, expectedMedia);
   const ok = !result.horizontalOverflow && result.images.every(i => i.loaded && !i.clipped && i.width > 20 && i.height > 20) && result.text.every(t => !t.clipped);
   report.checks.push({ ok, label, layout: result });
   if (!ok) console.log(`FAIL ${label}`);
@@ -154,6 +155,19 @@ try {
     settings: { teamCount: 6, classroomTeams: true, mode: 'team', dailyDoublePlacement: 'author', startCountdownSec: 0, answerTimerSec: 0,
       fairBuzz: false, autoUnlock: false, allPlayTimerSec: 60, lobbyGame: false, avatars: false } });
   report.rooms.push({ kind: 'classroom', code: game.code, id: game.id });
+  const answerClues = sourceClues.filter(c => c.answerMedia);
+  for (const clue of answerClues) {
+    const template = new URL(clue.answerMedia.url, BASE);
+    check(template.pathname.startsWith('/api/cox-media/'), `${clue.id} answer is served through the protected media route`);
+    const hosted = await hostContext.request.get(template.href);
+    check(hosted.status() === 200 && hosted.headers()['cache-control']?.includes('no-store') && (await hosted.body()).subarray(0,8).toString('hex') === '89504e470d0a1a0a', `${clue.id} authenticated host can load the original answer PNG without public caching`);
+    const scoped = new URL(template);
+    scoped.searchParams.set('game', game.id); scoped.searchParams.set('clue', clue.id);
+    const stem = clue.id.replace(/^cox-/, '');
+    const paths = [template.href, scoped.href, `${BASE}/cox/composites/${stem}-a.png`, `${BASE}/cox/composites/${stem}-a.svg`];
+    const statuses = await Promise.all(paths.map(async url => (await anonymous.request.get(url)).status()));
+    check(statuses.every(status => status === 404), `${clue.id} anonymous direct, guessed room, legacy PNG and SVG answer URLs all return404 before reveal`);
+  }
   check(/^[A-Z]{4}$/.test(game.code), 'new classroom room has a four-letter join code');
   await host.page.goto(`${BASE}/host/${game.code}`);
   await socketHarness(host, 'host', game.code);
@@ -255,9 +269,35 @@ try {
       await shot(display, `${clue.id}-clue-${size.width}x${size.height}`);
       await action(host, { type: 'clue/reveal' });
       await wait(display, v => v.clue?.stage === 'revealed', 'figure answer');
+      let revealedUrl;
+      if (size.width === 1280) {
+        revealedUrl = new URL(display.latest.clue.answerMedia.url, BASE);
+        const originalUrl = new URL(clue.answerMedia.url, BASE);
+        check(revealedUrl.pathname === originalUrl.pathname && revealedUrl.searchParams.get('game') === game.id && revealedUrl.searchParams.get('clue') === clue.id,
+          `${clue.id} reveal publishes only its matching room-scoped answer URL`);
+        const response = await anonymous.request.get(revealedUrl.href);
+        check(response.status() === 200 && response.headers()['cache-control']?.includes('no-store') && (await response.body()).subarray(0,8).toString('hex') === '89504e470d0a1a0a',
+          `${clue.id} revealed answer PNG reaches the anonymous display without caching`);
+        const wrongClue = new URL(revealedUrl); wrongClue.searchParams.set('clue', sourceClues[0].id);
+        const wrongGame = new URL(revealedUrl); wrongGame.searchParams.set('game', 'nonexistent-rehearsal-game');
+        check((await anonymous.request.get(originalUrl.href)).status() === 404 && (await anonymous.request.get(wrongClue.href)).status() === 404 && (await anonymous.request.get(wrongGame.href)).status() === 404,
+          `${clue.id} revealed media still rejects unscoped, wrong-clue and wrong-room requests`);
+      }
       await layout(display, `${clue.id} answer figures and text fit ${size.width}x${size.height}`);
       await shot(display, `${clue.id}-answer-${size.width}x${size.height}`);
+      if (revealedUrl) {
+        await wait(host, v => v.clue?.id === clue.id && v.clue.stage === 'revealed', 'host figure reveal history');
+        const reveal = host.latest.host.history.findLast(h => h.label === 'Revealed answer');
+        check(!!reveal, `${clue.id} explicit reveal is available for undo`);
+        await action(host, { seq: reveal.seq, undone: true }, 'host:undo');
+        await wait(display, v => v.clue?.stage !== 'revealed', 'undo hides figure answer');
+        check((await anonymous.request.get(revealedUrl.href)).status() === 404, `${clue.id} undoing reveal revokes anonymous answer delivery`);
+        await action(host, { seq: reveal.seq, undone: false }, 'host:undo');
+        await wait(display, v => v.clue?.stage === 'revealed', 'redo reveals figure answer');
+        check((await anonymous.request.get(revealedUrl.href)).status() === 200, `${clue.id} redoing reveal restores its scoped answer delivery`);
+      }
       await action(host, { type: 'clue/close' });
+      if (revealedUrl) check((await anonymous.request.get(revealedUrl.href)).status() === 404, `${clue.id} closing its reveal revokes anonymous answer delivery`);
     }
     // Exercise long narrative questions and long original answer keys as well.
     for (const clue of [sourceClues[4], sourceClues[6], sourceClues[18]]) {
@@ -377,6 +417,14 @@ try {
     const measured = await finalLayout(display.page);
     report.checks.push({ ok: measured.ok, label: `Final reveal content and prompt fit above score strip ${size.width}x${size.height}`, layout: measured });
     await shot(display, `final-reveal-${size.width}x${size.height}`);
+    await display.page.getByTestId('display-fullscreen').click();
+    await display.page.waitForFunction(() => !!document.fullscreenElement);
+    const fullscreenLayout = await displayLayout(display.page);
+    const fullscreenFinal = await finalLayout(display.page);
+    check(fullscreenLayout.ok && fullscreenLayout.fullscreen && fullscreenFinal.ok, `Final fullscreen control, content and scores remain disjoint ${size.width}x${size.height}`);
+    await shot(display, `final-reveal-fullscreen-${size.width}x${size.height}`);
+    await display.page.getByTestId('display-fullscreen').click();
+    await display.page.waitForFunction(() => !document.fullscreenElement);
   }
   await action(host, { type: 'game/end' });
   await wait(display, v => v.phase === 'finished', 'final awards');

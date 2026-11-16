@@ -21,11 +21,11 @@ Public instance: https://jeopardy.192-241-145-6.sslip.io
 
 ## Source and figures
 
-`python3 scripts/cox-convert.py` extracts the canonical JSON from the sibling base game, or the bundled authenticated-only `scripts/cox-data/offline.html` when base is absent. It preserves all 25 clues, all 50 text sides and the source image crop/label geometry. `node scripts/cox-render.mjs` renders 16 clue/answer composites from 15 original figures to 1200-pixel PNGs using Next's installed sharp. No media is fetched from a CDN. Generated `public/cox/` assets are ignored by Git and must be regenerated on a fresh checkout before building.
+`python3 scripts/cox-convert.py` extracts the canonical JSON from the sibling base game, or the bundled authenticated-only `scripts/cox-data/offline.html` when base is absent. It preserves all 25 clues, all 50 text sides and the source image crop/label geometry. `node scripts/cox-render.mjs` renders 16 clue/answer composites from 15 original figures to 1200-pixel PNGs using Next's installed sharp. No media is fetched from a CDN. Intermediates/originals live only in ignored `private/cox-build/`. Only question PNGs are written into `public/cox/`; answer PNGs live in ignored `private/cox-answer-media/`. Regenerate both on a fresh checkout before building. The source `answer-assets.json` preserves random asset IDs for repeatable recovery; those IDs are not authorization.
 
 The fifth category stays **Defense**, matching canonical gameData. The deck's opening slide calls it **MANAGEMENT**; this discrepancy is flagged rather than edited. No suspected academic error has been silently corrected.
 
-Board input and the standalone answer key live under `scripts/cox-data/`, outside public assets. The offline download requires host authentication. Socket public views withhold answer text and answer-media URLs until reveal; tested across host/display/six phones. Static figure URLs themselves are not authenticated object storage. Source code and the canonical content are in this fork; this is classroom reveal control, not a confidential exam system.
+Board input and the standalone answer key live under `scripts/cox-data/`, outside public assets. The offline download requires host authentication. Socket public views withhold answer text and answer-media URLs until reveal; tested across host/display/six phones. Answer media is served by `/api/cox-media/[asset]`: the authenticated owner/co-host can preview it; anonymous requests require a matching game/clue whose correct response is currently revealed. Before reveal, after undo and after closing the clue, anonymous requests return 404 with no-store. Public sockets add game/clue scope only at reveal. Legacy answer PNGs, SVGs and raw source figures were removed from public assets. Source code and canonical text are in this fork; participation materials are not a confidential exam.
 
 ## Air build and operation
 
@@ -51,9 +51,30 @@ Installed services:
 - `~/Library/LaunchAgents/com.andrew.cox-jeopardy-d.backup.plist`: daily 04:15 and on load; compressed app-only pg_dump under `~/Projects/cox-trivia-d/backups/`, retains seven, validates archive catalog. Logs: `backup.log` / `backup-error.log`.
 - Existing PostgreSQL 17 container `asus-postgres-fallback`, loopback port 15432, existing persisted volume `asus-postgres-fallback_data`, existing compose at `~/Services/asus-postgres-fallback/compose.yml`. Only isolated database and role `cox_trivia_d` added. Global read-only policy remains on; the new role alone has its read-only default off. No other database changed.
 - `~/.config/cox-jeopardy-d/.doppler.yaml`: app-scoped read-only service token, directory 0700 / file 0600. Wrapper `scripts/cox-deploy/bin/doppler` selects it. The grant expires **2026-11-30 UTC**; renew through Doppler before then. Runtime injects only `AUTH_SECRET,DATABASE_URL`; encrypted CLI fallback supports a Doppler outage. Secrets are never committed.
+- `~/Library/LaunchAgents/com.andrew.cox-jeopardy-d.logs.plist`: RunAtLoad plus hourly copy/truncate rotation for app/backup logs over 256 KiB, two archives per log. The original open file descriptors remain valid.
 - Doppler project/config: `cox-jeopardy-d/prd`; secret names `AUTH_SECRET`, `DATABASE_URL`, `COX_ANDREW_PASSWORD`, `COX_KERIK_PASSWORD`.
 
-Keep the Air awake, plugged in and logged in. Crash restart and persisted in-progress game recovery were exercised. A physical reboot was not performed; these are user LaunchAgents and begin at login, with PostgreSQL depending on the existing OrbStack startup.
+Keep the Air awake, plugged in and logged in. Crash restart and persisted in-progress game recovery were exercised. A physical reboot was not performed. The startup configuration and exact recovery sequence are documented below.
+
+## Recovery after an Air restart
+
+Verified without rebooting: the existing `~/Library/LaunchAgents/com.andrewfuller.asus-air-fallback.plist` is loaded, runs at login and every 120 seconds, and invokes `~/Projects/neon-backups/asus-postgres/supervise-air.py`. That supervisor calls `orb start` if Docker is unavailable, then `docker compose up -d` for the existing Postgres stack. The container has `restart: unless-stopped`. This configured path does not depend on an unverified OrbStack GUI login preference. It was inspected, not changed.
+
+The app LaunchAgent is loaded with RunAtLoad/KeepAlive. Production startup now waits for Postgres indefinitely in one process, retrying every 5 seconds after each bounded probe; it logs the first failure and then every 12 attempts. An OrbStack startup delay no longer exhausts a 60-second startup window. A fake-clock unit test verifies recovery after two failed probes without a process restart.
+
+If the Air has restarted, log in first. The automatic services should converge. To recover manually on the Air:
+
+```sh
+export PATH="$HOME/.orbstack/bin:/opt/homebrew/bin:/usr/bin:/bin"
+orb start
+docker compose -f "$HOME/Services/asus-postgres-fallback/compose.yml" up -d
+docker inspect --format '{{.State.Health.Status}}' asus-postgres-fallback
+launchctl print gui/$(id -u)/com.andrew.cox-jeopardy-d >/dev/null 2>&1 || launchctl bootstrap gui/$(id -u) "$HOME/Library/LaunchAgents/com.andrew.cox-jeopardy-d.plist"
+launchctl kickstart -k gui/$(id -u)/com.andrew.cox-jeopardy-d
+curl -fsS http://100.78.245.11:18340/readyz
+```
+
+Wait for `ok:true, db:true`, then reopen the same host/display URLs. Scores and game state resume from the persisted event log. Never recreate the database, delete its volume, restore over the live DB, or change its shared read-only setting as a reboot-recovery step.
 
 ## VPS HTTPS and rollback
 

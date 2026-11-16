@@ -2,81 +2,97 @@
   {
     "file": "1-0-a.png",
     "width": 1200,
-    "height": 381
+    "height": 381,
+    "protected": true
   },
   {
     "file": "1-0-q.png",
     "width": 1200,
-    "height": 381
+    "height": 381,
+    "protected": false
   },
   {
     "file": "1-3-a.png",
     "width": 1200,
-    "height": 526
+    "height": 526,
+    "protected": true
   },
   {
     "file": "1-3-q.png",
     "width": 1200,
-    "height": 423
+    "height": 423,
+    "protected": false
   },
   {
     "file": "2-0-a.png",
     "width": 1200,
-    "height": 430
+    "height": 430,
+    "protected": true
   },
   {
     "file": "2-0-q.png",
     "width": 1200,
-    "height": 430
+    "height": 430,
+    "protected": false
   },
   {
     "file": "2-1-a.png",
     "width": 1200,
-    "height": 705
+    "height": 705,
+    "protected": true
   },
   {
     "file": "2-1-q.png",
     "width": 1200,
-    "height": 705
+    "height": 705,
+    "protected": false
   },
   {
     "file": "2-2-a.png",
     "width": 1200,
-    "height": 610
+    "height": 610,
+    "protected": true
   },
   {
     "file": "2-2-q.png",
     "width": 1200,
-    "height": 395
+    "height": 395,
+    "protected": false
   },
   {
     "file": "2-3-a.png",
     "width": 1200,
-    "height": 559
+    "height": 559,
+    "protected": true
   },
   {
     "file": "2-3-q.png",
     "width": 1200,
-    "height": 559
+    "height": 559,
+    "protected": false
   },
   {
     "file": "3-0-a.png",
     "width": 1200,
-    "height": 817
+    "height": 817,
+    "protected": true
   },
   {
     "file": "3-0-q.png",
     "width": 1200,
-    "height": 866
+    "height": 866,
+    "protected": false
   },
   {
     "file": "3-1-a.png",
     "width": 1200,
-    "height": 888
+    "height": 888,
+    "protected": true
   },
   {
     "file": "3-1-q.png",
     "width": 1200,
-    "height": 912
+    "height": 912,
+    "protected": false
   }
 ]

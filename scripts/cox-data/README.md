@@ -16,7 +16,7 @@ npx tsx scripts/cox-import.ts --owner-email "$COX_HOST_EMAIL"
 
 The importer requires an existing host account. It never creates credentials. The fixed default board ID is `cox-plant-pathology-2026`; a different owner requires an explicit different `--board-id`. A repeated import with identical content is a no-op. Changed content is versioned before replacement, and share/status settings remain in place.
 
-`board.json`, `source-manifest.json`, and `render-manifest.json` are private build/import inputs. Do not copy them into `public/`. Public media lives in `public/cox/`; the game engine is responsible for withholding `answerMedia` until reveal, as it does for ordinary board media. These static files do not constitute authenticated media storage.
+`board.json`, `source-manifest.json`, and `render-manifest.json` are private build/import inputs. Do not copy them into `public/`. Intermediates and originals live in ignored `private/cox-build/`. Only question PNGs are public. Answer PNGs live in `private/cox-answer-media/` and are served through the reveal/auth-gated `/api/cox-media/[asset]` route. `answer-assets.json` preserves the generated 48-hex filenames for reproducible regeneration, but filenames alone never authorize a request. The renderer removes legacy public answer PNG/SVG files and raw figures.
 
 The converter preserves `gameData` text arrays in the source manifest, and joins paragraphs with two newlines for BoardContent. All 50 clue/answer sides retain the exact wording, punctuation, internal whitespace and source-slide references. There are 25 clues, 15 unique original figures and 16 image-bearing sides. There is no Final clue. Daily Doubles default off, matching the source game's default.
 
@@ -24,7 +24,7 @@ The original figure positions, image crop fractions and label text come from `ga
 
 The supplied PPT board calls the fifth category **MANAGEMENT**. The canonical game calls it **Defense** to match its questions. Defense is retained and the discrepancy remains explicitly recorded; no academic text is corrected.
 
-Conversion is deterministic. Running it again regenerates SVGs and restores board media URLs to `.svg`; run rasterization again before import/deployment to restore PNG URLs.
+Source conversion is deterministic. Running it regenerates private SVGs and restores temporary board URLs to `.svg`; run rasterization before import/deployment to restore question PNG URLs and protected answer API URLs. Preserve `answer-assets.json` to keep asset IDs stable. Existing persisted legacy games/versions were migrated with `cox-protect-existing.ts` while the app was stopped; no academic text changed.
 
 ## Public classroom rehearsal (Air)
 

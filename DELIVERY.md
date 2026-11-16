@@ -1,5 +1,7 @@
 # Version D delivery
 
+**Latest:** [Round 2 corrections, media protection and new validation](DELIVERY-ROUND2.md). The original delivery record below is historical; its old disk snapshot and static-answer-media limitation are superseded.
+
 Built from the real MIT Trivia Pig application in `andredubbs/trivia-pig`, branch `cox-classroom`. No change was made to `cornell-mps`, its branches or PRs. GitHub Actions on the fork are disabled. Install, build, browser tests and production serving ran on Air; the Pro contains source only.
 
 Public root: https://jeopardy.192-241-145-6.sslip.io — host login `/login`, games `/dashboard`, projector `/display/CODE`, team join `/join?code=CODE`. Final demo room and revision are recorded below after validation.

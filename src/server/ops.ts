@@ -47,7 +47,7 @@ export async function checkDbEncoding(): Promise<void> {
 export async function waitForDb(attempts = 30, delayMs = 2000): Promise<boolean> {
   for (let i = 1; i <= attempts; i++) {
     if (await dbReady()) return true;
-    console.warn(`[startup] database not reachable yet (attempt ${i}/${attempts})`);
+    if (i === 1 || i % 12 === 0) console.warn(`[startup] waiting for database (attempt ${i}); retrying without restarting the process`);
     await new Promise((r) => setTimeout(r, delayMs));
   }
   return false;

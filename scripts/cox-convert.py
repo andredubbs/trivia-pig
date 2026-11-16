@@ -57,7 +57,7 @@ def composite(side, media):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=(ROOT.parent/'base/index.codex.html' if (ROOT.parent/'base/index.codex.html').exists() else ROOT/'scripts/cox-data/offline.html'))
-    parser.add_argument('--output', type=Path, default=ROOT/'public/cox')
+    parser.add_argument('--output', type=Path, default=ROOT/'private/cox-build', help='Private intermediate figures/SVGs; never serve this directory')
     parser.add_argument('--data-output', type=Path, default=ROOT/'scripts/cox-data', help='Private board and source manifest directory')
     parser.add_argument('--media-base', default='/cox', help='URL prefix for deployed composite figures')
     parser.add_argument('--media-format', choices=['svg', 'png'], default='svg', help='PNG requires cox-render.mjs after conversion')

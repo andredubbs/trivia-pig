@@ -28,7 +28,7 @@ async function main() {
   // Validate secrets early so a misconfigured prod container fails fast.
   void env.secret;
 
-  if (!(await waitForDb(dev ? 3 : 30))) {
+  if (!(await waitForDb(dev ? 3 : Number.POSITIVE_INFINITY, dev ? 2000 : 5000))) {
     throw new Error("Database is not reachable (check DATABASE_URL and that Postgres is up)");
   }
   void checkDbEncoding();

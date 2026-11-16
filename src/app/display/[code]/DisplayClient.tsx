@@ -140,7 +140,15 @@ export default function DisplayClient({ code, mode = "display", obs = false, mut
   return (
     <Shell hideCursor={obs}>
       <ConnBanner status={status} error={error} />
-      <Stage view={view} now={now} presence={presence} mini={mini} />
+      {!obs && <nav aria-label="Display controls" data-testid="display-controls" className="relative z-50 flex h-9 shrink-0 items-center justify-end gap-3 bg-[var(--board-edge)] px-2">
+        {watching && <WatchBar code={code} canJoin={view.settings.audience} soundOn={soundOn} onSound={async () => {
+          if (soundOn) await sound().suspend();
+          else await sound().unlock();
+          setSoundOn(!soundOn);
+        }} />}
+        <FullscreenButton />
+      </nav>}
+      <div className="min-h-0 flex-1" data-testid="display-content"><Stage view={view} now={now} presence={presence} mini={mini} /></div>
       {caption && (
         <div key={caption.key} className="anim-pop pointer-events-none fixed bottom-[3vmin] left-1/2 z-30 -translate-x-1/2 rounded-[1vmin] bg-black/85 px-[2.4vmin] py-[1vmin] text-[2.8vmin] font-semibold text-white" role="status" aria-live="polite">
           {caption.text}
@@ -171,19 +179,6 @@ export default function DisplayClient({ code, mode = "display", obs = false, mut
           }}
         />
       )}
-      {watching && (
-        <WatchBar
-          code={code}
-          canJoin={view.settings.audience}
-          soundOn={soundOn}
-          onSound={async () => {
-            if (soundOn) await sound().suspend();
-            else await sound().unlock();
-            setSoundOn(!soundOn);
-          }}
-        />
-      )}
-      {!obs && <FullscreenButton />}
     </Shell>
   );
 }
@@ -207,13 +202,13 @@ const CAPTIONS: Record<string, string> = {
 };
 
 function Shell({ children, hideCursor }: { children: React.ReactNode; hideCursor?: boolean }) {
-  return <main className={`relative h-dvh w-screen select-none overflow-hidden bg-[var(--board-edge)] text-white ${hideCursor ? "cursor-none" : ""}`}>{children}</main>;
+  return <main className={`relative flex h-dvh w-screen flex-col select-none overflow-hidden bg-[var(--board-edge)] text-white ${hideCursor ? "cursor-none" : ""}`}>{children}</main>;
 }
 
 /** Spectator controls: their own sound switch, and a way into the audience. */
 function WatchBar({ code, canJoin, soundOn, onSound }: { code: string; canJoin: boolean; soundOn: boolean; onSound: () => void }) {
   return (
-    <div className="fixed left-1/2 top-[1vmin] z-50 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-lg bg-black/50 px-2 py-1.5 text-sm text-white/80 opacity-60 transition hover:opacity-100 focus-within:opacity-100">
+    <div className="flex min-w-0 items-center gap-2 whitespace-nowrap text-sm text-white/85">
       <span>👀 Watching</span>
       <button type="button" onClick={onSound} aria-pressed={soundOn} className="rounded bg-white/15 px-2 py-0.5 hover:bg-white/25">
         {soundOn ? "🔊 Sound on" : "🔇 Sound off"}
@@ -654,23 +649,17 @@ function WithPodiums({ view, children }: { view: GameView; children: React.React
   );
 }
 
-/** A podium's score: counts to its new value, flashes the points won or lost, and shows a hot streak. */
+/** One counting score, with a separate reserved line for its latest change and streak. */
 function PodiumScore({ score, streak }: { score: number; streak: number }) {
   const shown = useAnimatedNumber(score);
   const delta = useDelta(score);
   return (
-    <div className={`money relative grid h-[36%] place-items-center overflow-hidden bg-[var(--board)] text-[3.6vmin] ${shown < 0 ? "!text-red-400" : ""}`}>
-      {formatScore(shown)}
-      {streak >= 3 && (
-        <span className="absolute right-[0.5vmin] top-[0.2vmin] rounded-full bg-black/45 px-[0.6vmin] font-sans text-[1.7vmin] font-bold text-white" title={`${streak} right in a row`}>
-          🔥{streak}
-        </span>
-      )}
-      {delta && (
-        <span key={delta.key} className={`anim-delta absolute inset-0 grid place-items-center font-sans text-[3.4vmin] font-black text-white ${delta.amount > 0 ? "bg-green-600" : "bg-red-600"}`}>
-          {formatDelta(delta.amount)}
-        </span>
-      )}
+    <div className="flex h-[40%] shrink-0 flex-col items-center justify-center overflow-hidden bg-[var(--board)]" data-testid="podium-score" data-target-score={score}>
+      <span className={`money text-[3.6vmin] leading-none ${shown < 0 ? "!text-red-200" : ""}`} data-testid="podium-score-value">{formatScore(shown)}</span>
+      <div className="flex h-[2.2vmin] shrink-0 items-center justify-center gap-[0.8vmin] font-sans text-[1.7vmin] leading-none" data-testid="podium-score-change">
+        {delta && <span key={delta.key} className={`rounded px-[0.5vmin] py-[0.2vmin] font-bold ${delta.amount > 0 ? "bg-green-950 text-green-200" : "bg-red-950 text-red-100"}`} data-testid="podium-score-delta">{formatDelta(delta.amount)}</span>}
+        {streak >= 3 && <span className="font-bold text-white" title={`${streak} right in a row`}>🔥{streak}</span>}
+      </div>
     </div>
   );
 }
@@ -695,7 +684,7 @@ function PodiumRow({ view, list: everyone }: { view: GameView; list: Contestant[
   }
   const hidden = everyone.length - list.length;
   return (
-    <div className="flex h-[19vh] shrink-0 items-stretch justify-center gap-[1.2vmin] bg-gradient-to-b from-[#3a2a0a] to-[#1a1204] px-[1vmin] py-[1vmin]">
+    <div className="flex h-[19vh] shrink-0 items-stretch justify-center gap-[1.2vmin] bg-gradient-to-b from-[#3a2a0a] to-[#1a1204] px-[1vmin] py-[1vmin]" data-testid="display-score-strip">
       {hidden > 0 && (
         <div className="order-last flex shrink-0 flex-col items-center justify-center px-[1.5vmin] text-center text-white/70">
           <div className="money text-[3.4vmin] text-gold">+{hidden}</div>
@@ -710,6 +699,8 @@ function PodiumRow({ view, list: everyone }: { view: GameView; list: Contestant[
         return (
           <div
             key={c.id}
+            data-testid="display-podium"
+            data-contestant-id={c.id}
             className={`flex min-w-0 max-w-[30vmin] flex-1 flex-col overflow-hidden rounded-[1vmin] border-[0.3vmin] bg-[var(--board-deep)] transition ${buzzed || ddId === c.id ? "podium-buzzed border-gold" : "border-[#6b5a2a]"} ${attempted ? "opacity-50" : ""}`}
           >
             <PodiumScore score={score} streak={view.streaks[c.id] ?? 0} />
@@ -1015,7 +1006,8 @@ function FullscreenButton() {
   return (
     <button
       onClick={() => (fs ? document.exitFullscreen() : document.documentElement.requestFullscreen?.())}
-      className="fixed bottom-[1vmin] right-[1vmin] z-50 rounded-lg bg-black/40 px-3 py-1.5 text-sm text-white/40 opacity-30 transition hover:opacity-100"
+      className="shrink-0 rounded-md border border-white/25 px-3 py-1 text-sm font-semibold text-white/85 hover:bg-white/10 focus-visible:bg-white/10"
+      data-testid="display-fullscreen"
       title="Toggle fullscreen (F)"
     >
       {fs ? "Exit fullscreen" : "⛶ Fullscreen"}

@@ -1,0 +1,42 @@
+import { expect, it } from 'vitest';
+import { makeRound } from './board';
+import { initialState } from '@/engine/reducer';
+import { DEFAULT_SETTINGS } from '@/engine/types';
+import { coxAnswerRevealed, coxMediaForGame } from './coxMedia';
+const asset = 'a'.repeat(48) + '.png';
+const media = { type: 'image' as const, url: '/api/cox-media/' + asset };
+it('scopes private answer media to the current game without changing upstream media', () => {
+  expect(coxMediaForGame(media, 'game-1', 'clue-1')?.url).toBe(media.url + '?game=game-1&clue=clue-1');
+  expect(coxMediaForGame(media, undefined, 'clue-1')).toEqual(media);
+  expect(coxMediaForGame({ type:'image',url:'/ordinary.png' }, 'game-1', 'q')?.url).toBe('/ordinary.png');
+});
+it('denies before reveal, wrong assets/clues, and after undo/close', () => {
+  const round = makeRound('single', 1, [100]);
+  round.categories[0].clues[0].answerMedia = media;
+  const id = round.categories[0].clues[0].id;
+  const s = initialState({ board: { rounds:[round] }, settings:DEFAULT_SETTINGS });
+  expect(coxAnswerRevealed(s,id,asset)).toBe(false);
+  s.clue = { id, stage:'reading' } as typeof s.clue;
+  expect(coxAnswerRevealed(s,id,asset)).toBe(false);
+  s.clue!.stage = 'revealed';
+  expect(coxAnswerRevealed(s,id,asset)).toBe(true);
+  expect(coxAnswerRevealed(s,'another-clue',asset)).toBe(false);
+  expect(coxAnswerRevealed(s,id,'b'.repeat(48)+'.png')).toBe(false);
+  s.clue!.stage = 'reading';
+  expect(coxAnswerRevealed(s,id,asset)).toBe(false);
+  s.clue = null;
+  expect(coxAnswerRevealed(s,id,asset)).toBe(false);
+});
+it('Final answer media requires an actual correct-response reveal', () => {
+  const s = initialState({ board:{rounds:[],final:{category:'C',text:'Q',answer:'A',answerMedia:media}},settings:DEFAULT_SETTINGS });
+  s.final = { stage:'writing',revealed:{} } as typeof s.final;
+  expect(coxAnswerRevealed(s,'final',asset)).toBe(false);
+  s.final!.stage = 'reveal';
+  s.final!.revealed = { team:{answer:true,wager:true,judged:false} };
+  expect(coxAnswerRevealed(s,'final',asset)).toBe(false);
+  s.final!.revealed.team.judged = true;
+  expect(coxAnswerRevealed(s,'final',asset)).toBe(true);
+  s.final!.stage = 'done';
+  s.final!.revealed = {};
+  expect(coxAnswerRevealed(s,'final',asset)).toBe(true);
+});

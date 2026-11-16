@@ -93,3 +93,7 @@ All screenshot paths below share Air directory `/Users/andrewfuller/Projects/cox
 Lead visually inspected the settled board, original-figure reveal, long answer, repaired Final, winner/awards, and phone buzz view. Final content fits above the six-team score strip. Earlier animation-frame screenshots remain historical; use the verified files above.
 
 No coordinator integration is required to run this independent preview. For Friday, keep Air powered/logged in and download the rescue copy. The Wednesday demo should check a real phone on the actual classroom Wi-Fi and projector; no separate approval gate is introduced.
+
+Implementation commit: [`ea29d151a03db0fab46f7db0078e6bcf94f9e87b`](https://github.com/andredubbs/trivia-pig/commit/ea29d151a03db0fab46f7db0078e6bcf94f9e87b), branch [`cox-classroom`](https://github.com/andredubbs/trivia-pig/tree/cox-classroom). Air's ignored `deploy/cox-revision` records this tested code revision for `/readyz`. Later delivery-document-only commits do not change its built application.
+
+Local source root: `/Users/andrewfuller/Projects/cox-jeopardy-lab/version-d-trivia-pig`; app entry is `server.ts` plus `src/app/`, rather than `index.html`. Socket.IO in `src/server/` replaces the shared brief's Cloudflare relay for this explicitly requested Trivia Pig deployment. Air has the normal fork checkout; Pro's sandboxed source export uses temporary Git metadata at `/tmp/cox-trivia-d.git` without changing the surrounding lab repository.

@@ -58,11 +58,11 @@ describe("verified OIDC linking revokes preexisting account credentials", () => 
     expect(result.next).toBe("/dashboard");
     expect(mocks.createUser).not.toHaveBeenCalled();
     expect(mocks.transaction).toHaveBeenCalledTimes(1);
-    expect(mocks.transaction.mock.calls[0][0]).toHaveLength(5);
     for (const kind of kinds) {
-      expect(mocks[kind].deleteMany).toHaveBeenCalledExactlyOnceWith({ where: { userId: owner.id } });
       expect(credentials[kind]).toEqual([{ userId: "unrelated-owner" }]);
+      expect(mocks[kind].deleteMany).toHaveBeenCalledExactlyOnceWith({ where: { userId: owner.id } });
     }
+    expect(mocks.transaction.mock.calls[0][0]).toHaveLength(5);
   });
 
   it("does not revoke credentials on ordinary login to an already-linked account", async () => {

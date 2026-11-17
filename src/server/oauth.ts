@@ -233,8 +233,8 @@ export async function exchange(form: Record<string, string | undefined>): Promis
     if (!code || code.length > 200) return oauthError("invalid_grant", "Missing code.");
     const row = await prisma.oAuthCode.findUnique({ where: { codeHash: sha256(code) } });
     // Burn the code on any attempt: it is single use, right or wrong.
-    if (row) await prisma.oAuthCode.deleteMany({ where: { id: row.id } });
-    if (!row || row.expiresAt.getTime() < Date.now()) return oauthError("invalid_grant", "That code is not valid any more. Start the sign-in again.");
+    const consumed = row ? await prisma.oAuthCode.deleteMany({ where: { id: row.id } }) : null;
+    if (!row || consumed?.count !== 1 || row.expiresAt.getTime() < Date.now()) return oauthError("invalid_grant", "That code is not valid any more. Start the sign-in again.");
     if (row.clientId !== clientId || row.redirectUri !== (form.redirect_uri ?? "")) return oauthError("invalid_grant", "The code was issued to a different app or return address.");
     if (!pkceMatches(form.code_verifier ?? "", row.codeChallenge)) return oauthError("invalid_grant", "The code_verifier does not match.");
 

@@ -150,12 +150,15 @@ export async function finishLogin(currentUrl: URL, pending: Pending): Promise<{ 
   let user = await prisma.user.findUnique({ where: { oidcSub: sub } });
   if (!user && verified) {
     // Link an existing local account with the same verified email. Whoever set its password or
-    // holds its sessions may not be this person, so both go.
+    // holds its sessions or delegated board credentials may not be this person; revoke those.
     const local = await prisma.user.findUnique({ where: { email } });
     if (local) {
       [user] = await prisma.$transaction([
         prisma.user.update({ where: { id: local.id }, data: { oidcSub: sub, passwordHash: null } }),
         prisma.session.deleteMany({ where: { userId: local.id } }),
+        prisma.apiToken.deleteMany({ where: { userId: local.id } }),
+        prisma.oAuthGrant.deleteMany({ where: { userId: local.id } }),
+        prisma.oAuthCode.deleteMany({ where: { userId: local.id } }),
       ]);
     }
   }
